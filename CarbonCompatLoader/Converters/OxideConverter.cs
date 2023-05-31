@@ -10,9 +10,15 @@ public class OxideConverter : BaseConverter
 {
     public override List<IASMPatch> patches => new()
     {
+        //oxide
         new OxideTypeRef(),
-        new HarmonyTypeRef(),
         
+        //harmony
+        new HarmonyTypeRef(),
+        new HarmonyILSwitch(),
+        new HarmonyBlacklist(),
+        
+        //common
         new AssemblyVersionPatch()
     };
     public override string Path => "oxide";

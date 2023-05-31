@@ -16,42 +16,6 @@ internal static class PluginReferenceHandler
     {
         __result?.AddRange(RefCache.Values);
     }
-    
-    /*private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> op, ILGenerator ILGen)
-    {
-        List<CodeInstruction> IL = new(op);
-
-        int tryStartBlock = -1;
-
-        int bx = 0;
-        CodeInstruction CIL = null;
-        for (int index = 0; index < IL.Count; index++)
-        {
-            CIL = IL[index];
-            if (CIL.blocks.Any(x => x.blockType == ExceptionBlockType.BeginExceptionBlock))
-            {
-                Logger.Info($"Found try block at: {index}");
-                bx++;
-                if (bx == 3)
-                {
-                    Logger.Info("Found try block 3!");
-                    tryStartBlock = index;
-                    break;
-                }
-            }
-        }
-
-        if (tryStartBlock == -1)
-        {
-            Logger.Error("Failed to find block?");
-            return IL;
-        }
-        
-        Logger.Info($"Block is: {CIL.opcode.ToString()} : {CIL.operand}");
-        
-        
-        return IL;
-    }*/
 
     internal static void SorryRaul(Assembly carbonMain)
     {

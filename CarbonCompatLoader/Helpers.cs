@@ -27,7 +27,6 @@ public static class Helpers
             if (rs is AssemblyReference aref)
             {
                 output = aref;
-                Logger.Info("Found it");
                 return null;
             }
 

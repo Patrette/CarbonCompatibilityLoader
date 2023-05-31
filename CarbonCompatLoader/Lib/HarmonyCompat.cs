@@ -40,6 +40,14 @@ public static class HarmonyCompat
     internal class OnHarmonyModLoadedArgs { }
     internal class OnHarmonyModUnloadedArgs { }
 
+    internal interface IHarmonyModHooks
+    {
+        void OnLoaded(OnHarmonyModLoadedArgs args);
+
+        void OnUnloaded(OnHarmonyModUnloadedArgs args);
+    }
+
+
     public static void PatchProcessorCompat(Harmony instance, Type type, HarmonyMethod attributes)
     {
     #if DEBUG

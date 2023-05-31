@@ -10,7 +10,7 @@ public class OxideTypeRef : BaseOxidePatch
     {
         foreach (TypeReference tw in asm.GetImportedTypeReferences())
         {
-            if (tw.Scope is SerializedAssemblyReference aref && aref.Name.StartsWith("Oxide.") && !aref.Name.ToLower().StartsWith("oxide.ext."))
+            if (tw.Scope is AssemblyReference aref && aref.Name.StartsWith("Oxide.") && !aref.Name.ToLower().StartsWith("oxide.ext."))
             {
                 /*if (tw.Name == "CSPlugin")
                 {
@@ -41,7 +41,6 @@ public class OxideTypeRef : BaseOxidePatch
                     tw.Scope = MainConverter.Common.ImportWith(importer);
                     continue;
                 }
-
                 if (tw.FullName == "Oxide.Plugins.CSharpPlugin")
                 {
                     tw.Name = "RustPlugin";
