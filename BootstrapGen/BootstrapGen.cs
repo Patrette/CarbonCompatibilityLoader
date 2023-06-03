@@ -39,13 +39,7 @@ public static class BootstrapGen
             Bootstrap.logger.Error("No args??");
             return;
         }
-        List<string> oArgs = new List<string>();
-        for (int i = 1; i < args.Length; i++)
-        {
-            oArgs.Add(args[i]);
-        }
-
-        optionSet.Parse(oArgs);
+        
         AssemblyDownloader.WriteCache = true;
         AssemblyDownloader.NuGetCache = NuGetCache;
         Bootstrap.downloadInfo = new DownloadManifest()
