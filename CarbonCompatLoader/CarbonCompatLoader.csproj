@@ -51,6 +51,7 @@
         <Compile Include="Patches\Harmony\HarmonyTypeRef.cs" />
         <Compile Include="Patches\IASMPatch.cs" />
         <Compile Include="Patches\Oxide\BaseOxidePatch.cs" />
+        <Compile Include="Patches\Oxide\OxideILSwitch.cs" />
         <Compile Include="Patches\Oxide\OxideTypeRef.cs" />
         <Compile Include="PluginReferenceHandler.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
@@ -810,8 +811,8 @@
       <None Include="packages.config" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Target Name="AfterBuild">
+  <!--<Target Name="AfterBuild">
     <Copy SourceFiles="$(SolutionDir)CarbonCompatLoader\bin\$(Configuration)\CarbonCompatibilityLoader.dll" DestinationFolder="C:\rustserver\carbon\extensions" />
-  </Target>
+  </Target>-->
 
 </Project>

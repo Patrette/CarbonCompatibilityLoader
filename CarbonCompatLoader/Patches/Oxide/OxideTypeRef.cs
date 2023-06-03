@@ -31,7 +31,6 @@ public class OxideTypeRef : BaseOxidePatch
                 }
                 if (tw.Namespace.StartsWith("Newtonsoft.Json"))
                 {
-                    //Console.WriteLine($"adding newtonsoft {tw.FullName}");
                     tw.Scope = MainConverter.Newtonsoft.ImportWith(importer);
                     continue;
                 }
@@ -56,7 +55,6 @@ public class OxideTypeRef : BaseOxidePatch
                 }
 
                 tw.Scope = MainConverter.Common.ImportWith(importer);
-                //if (tw.Name.StartsWith("CallHook")) Console.WriteLine(tw.FullName);
             }
         }
     }

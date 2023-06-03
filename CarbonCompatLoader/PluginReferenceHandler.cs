@@ -17,7 +17,7 @@ internal static class PluginReferenceHandler
         __result?.AddRange(RefCache.Values);
     }
 
-    internal static void SorryRaul(Assembly carbonMain)
+    internal static void ApplyPatch(Assembly carbonMain)
     {
         System.Type SCT = carbonMain.GetType("Carbon.Jobs.ScriptCompilationThread");
         MainConverter.HarmonyInstance.Patch(

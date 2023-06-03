@@ -1,14 +1,23 @@
 ﻿using System;
 using API.Assembly;
+using UnityEngine;
 
 namespace CarbonCompatLoader;
 
 public class CCLCore : ICarbonExtension
 {
+    internal static byte[] SelfASMRaw = null;
     void ICarbonAddon.Awake(EventArgs args)
     {
         Logger.Info("Initializing");
-        MainConverter.Initialize();
+        try
+        {
+            MainConverter.Initialize();
+        }
+        catch (Exception e)
+        {
+            Debug.LogError(e);
+        }
         Logger.Info("Loading mods");
         MainConverter.LoadAll();
     }

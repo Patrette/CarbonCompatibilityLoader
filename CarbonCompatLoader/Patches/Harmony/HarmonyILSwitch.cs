@@ -26,10 +26,8 @@ public class HarmonyILSwitch : BaseHarmonyPatch
                     // IL Patches
                     if (CIL.OpCode == CilOpCodes.Call && CIL.Operand is MemberReference { FullName: $"{Harmony2NS}.{HarmonyStr} {Harmony2NS}.{HarmonyStr}::Create(System.String)" })
                     {
-                        Debug.Log("Found harmony call!!");
                         CIL.OpCode = CilOpCodes.Newobj;
                         CIL.Operand = importer.ImportMethod(AccessTools.Constructor(typeof(HarmonyLib.Harmony), new Type[]{typeof(string)}));
-                        //body.ComputeMaxStackOnBuild = false;
                     }
 
                     if ((CIL.OpCode == CilOpCodes.Newobj) && CIL.Operand is MemberReference bref &&
@@ -47,23 +45,16 @@ public class HarmonyILSwitch : BaseHarmonyPatch
                         cref.DeclaringType.Name == "PatchProcessor" &&
                         cref.Name == "Patch")
                     {
-                        //Console.WriteLine($"PatchProcessor::Patch() call at {method.FullName}");
-                        //Instruction @new = OpCodes.Callvirt.ToInstruction(harmonyPatcher_Patch);
-                        //method.Body.Instructions[index] = @new;
                         if (index != 0)
                         {
                             CilInstruction ccall = body.Instructions[index - 1];
                             if (ccall.OpCode == CilOpCodes.Call && ccall.Operand == PatchProcessorCompatRef)
                             {
-                                //Console.WriteLine("found the thing!!");
                                 body.Instructions.RemoveAt(index);
                                 CilInstruction pop = body.Instructions[index];
-                                //Console.WriteLine($"Next is {pop.OpCode.Name}");
                                 if (pop.OpCode == CilOpCodes.Pop)
                                 {
-                                    //Console.WriteLine("found the pop!!");
-                                    //method.Body.KeepOldMaxStack = true;
-                                   body.Instructions.RemoveAt(index);
+                                    body.Instructions.RemoveAt(index);
                                 }
                             }
                         }

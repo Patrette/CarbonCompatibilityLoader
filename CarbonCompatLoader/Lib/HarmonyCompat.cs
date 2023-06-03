@@ -3,18 +3,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
+using JetBrains.Annotations;
 using UnityEngine;
 
 namespace CarbonCompatLoader.Lib;
 
+[UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
 public static class HarmonyCompat
 {
     internal const string log = "[CHA] ";
     internal const string patch_str = log + "Patching method {0}::{1}";
     internal const string complete = log + "Patch complete\n";
-
+    
+    [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
     internal static class HarmonyLoader
     {
+        [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
         internal class HarmonyMod
         {
             internal string Name { get; set; }
@@ -26,20 +30,28 @@ public static class HarmonyCompat
             internal Type[] AllTypes { get; set; }
 
             internal List<IHarmonyModHooks> Hooks { get; } = new List<IHarmonyModHooks>();
-
         }
+
         internal static List<HarmonyLoader.HarmonyMod> loadedMods = new List<HarmonyLoader.HarmonyMod>();
     }
-
+    
+    [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
     internal struct HarmonyModInfo
     {
         internal string Name;
 
         internal string Version;
     }
-    internal class OnHarmonyModLoadedArgs { }
-    internal class OnHarmonyModUnloadedArgs { }
 
+    internal class OnHarmonyModLoadedArgs
+    {
+    }
+
+    internal class OnHarmonyModUnloadedArgs
+    {
+    }
+    
+    [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
     internal interface IHarmonyModHooks
     {
         void OnLoaded(OnHarmonyModLoadedArgs args);
@@ -55,38 +67,14 @@ public static class HarmonyCompat
     #endif
         //PatchProcessorCompat(null, null, null);
         MethodInfo[] methods = type.GetMethods();
-        MethodInfo postfix = methods.FirstOrDefault(x=>x.GetCustomAttributes(typeof(HarmonyPostfix), false).Length > 0);
-        MethodInfo prefix = methods.FirstOrDefault(x=>x.GetCustomAttributes(typeof(HarmonyPrefix), false).Length > 0);
-        MethodInfo transpiler = methods.FirstOrDefault(x=>x.GetCustomAttributes(typeof(HarmonyTranspiler), false).Length > 0);
-        MethodBase patchTargetMethod = methods.FirstOrDefault(x=>
-            x.GetCustomAttributes(typeof(HarmonyTargetMethods), false).Length > 0 || 
+        MethodInfo postfix =
+            methods.FirstOrDefault(x => x.GetCustomAttributes(typeof(HarmonyPostfix), false).Length > 0);
+        MethodInfo prefix = methods.FirstOrDefault(x => x.GetCustomAttributes(typeof(HarmonyPrefix), false).Length > 0);
+        MethodInfo transpiler =
+            methods.FirstOrDefault(x => x.GetCustomAttributes(typeof(HarmonyTranspiler), false).Length > 0);
+        MethodBase patchTargetMethod = methods.FirstOrDefault(x =>
+            x.GetCustomAttributes(typeof(HarmonyTargetMethods), false).Length > 0 ||
             x.GetCustomAttributes(typeof(HarmonyTargetMethod), false).Length > 0);
-        /*foreach (MethodInfo me in type.GetMethods())
-        {
-            if (postfix == null && me.GetCustomAttributes(typeof(HarmonyPostfix), false).Length > 0)
-            {
-                postfix = me;
-            }
-            else if (prefix == null && me.GetCustomAttributes(typeof(HarmonyPrefix), false).Length > 0)
-            {
-                prefix = me;
-            }
-            else if (transpiler == null && me.GetCustomAttributes(typeof(HarmonyTranspiler), false).Length > 0)
-            {
-                transpiler = me;
-            }
-            else if (patchTargetMethod == null &&
-                     me.GetCustomAttributes(typeof(HarmonyTargetMethods), false).Length > 0 ||
-                     me.GetCustomAttributes(typeof(HarmonyTargetMethod), false).Length > 0)
-            {
-                patchTargetMethod = me;
-            }
-        }*/
-        //type.GetMethods().FirstOrDefault(m => m.GetCustomAttributes(typeof(HarmonyPostfix), false).Length > 0);
-        //MethodBase prefix = type.GetMethods().FirstOrDefault(m => m.GetCustomAttributes(typeof(HarmonyPrefix), false).Length > 0);
-        //MethodBase transpiler = type.GetMethods().FirstOrDefault(m => m.GetCustomAttributes(typeof(HarmonyTranspiler), false).Length > 0);
-
-        //MethodBase patchTargetMethod = type.GetMethods().FirstOrDefault(m => m.GetCustomAttributes(typeof(HarmonyTargetMethods), false).Length > 0);
         if (patchTargetMethod == null)
         {
             throw new NullReferenceException($"failed to find target method in {type.FullName}");
@@ -98,7 +86,6 @@ public static class HarmonyCompat
         {
             methodsToPatch = ((IEnumerable<MethodBase>)patchTargetMethod.Invoke(null,
                 patchTargetMethod.GetParameters().Length > 0 ? new object[] { null } : Array.Empty<object>())).ToList();
-            if (methodsToPatch == null) return;
         }
         else if (((MethodInfo)patchTargetMethod).ReturnType == typeof(MethodBase))
         {

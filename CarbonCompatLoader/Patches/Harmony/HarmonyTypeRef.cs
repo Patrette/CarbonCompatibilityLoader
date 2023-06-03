@@ -25,7 +25,6 @@ public class HarmonyTypeRef : BaseHarmonyPatch
             if (aref != null && aref.Name == "Rust.Harmony")
             {
                 tw.Namespace = $"CarbonCompatLoader.Lib";
-                //tw.DeclaringType = harmonyCompat.TryGetTypeDefOrRefSig().TypeRef;
                 tw.Scope = (IResolutionScope)harmonyCompatRef.ImportWith(importer);
             }
         }

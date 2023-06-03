@@ -16,8 +16,8 @@ namespace CarbonCompatLoader;
 public static class MainConverter
 {
     public static string RootDir = Path.Combine(Defines.GetRootFolder(), "CCL");
-    
-    public static ModuleDefinition SelfModule = ModuleDefinition.FromFile(Path.Combine(Defines.GetExtensionsFolder(), typeof(MainConverter).Assembly.GetName().Name+".dll"));
+
+    public static ModuleDefinition SelfModule;
 
     public static AssemblyReference SDK = new AssemblyReference("Carbon.SDK", new Version(0,0,0,0));
     
@@ -41,7 +41,7 @@ public static class MainConverter
         {
             using MemoryStream dllStream = new MemoryStream(data);
             PluginReferenceHandler.RefCache.Add(name, MetadataReference.CreateFromStream(dllStream));
-            Logger.Info($"Added reference: {name}");
+            //Logger.Info($"Added reference: {name}");
         }
         else
         {
@@ -61,7 +61,7 @@ public static class MainConverter
         types = types.Where(x => typeof(ICarbonCompatExt).IsAssignableFrom(x) && !x.IsAbstract).ToArray();
         if (types.Length == 0)
         {
-            Logger.Error($"No entrypoint for {name}!?");
+            Logger.Error($"No entrypoint for {name}?!");
             return;
         }
         foreach (Type type in types)
@@ -73,35 +73,33 @@ public static class MainConverter
 
     public static void Initialize()
     {
-        if (Converters == null)
+        Converters = new Dictionary<string, BaseConverter>();
+        SelfModule = CCLCore.SelfASMRaw != null ? ModuleDefinition.FromBytes(CCLCore.SelfASMRaw) : ModuleDefinition.FromFile(Path.Combine(Defines.GetExtensionsFolder(), typeof(MainConverter).Assembly.GetName().Name+".dll"));
+        foreach (Assembly asm in AppDomain.CurrentDomain.GetAssemblies())
         {
-            Converters = new Dictionary<string, BaseConverter>();
-            foreach (Assembly asm in AppDomain.CurrentDomain.GetAssemblies())
+            if (asm == null) continue;
+            if (asm.GetName().Name.StartsWith("Carbon_0.")) CarbonMain = asm;
+        }
+
+        PluginReferenceHandler.ApplyPatch(CarbonMain);
+        Directory.CreateDirectory(RootDir);
+    #if DEBUG
+        Directory.CreateDirectory(Path.Combine(RootDir, "debug_gen"));
+    #endif
+        foreach (Type type in Assembly.GetExecutingAssembly().GetTypes()
+                     .Where(x => typeof(BaseConverter).IsAssignableFrom(x) && !x.IsAbstract))
+        {
+            BaseConverter cv = (BaseConverter)Activator.CreateInstance(type);
+            if (Converters.TryGetValue(cv.Path, out BaseConverter dup))
             {
-                if (asm == null) continue;
-                if (asm.GetName().Name.StartsWith("Carbon_0.")) CarbonMain = asm;
-                
+                Logger.Error($"Duplicate converter {type.FullName} > {dup.GetType().FullName}");
+                continue;
             }
-            PluginReferenceHandler.SorryRaul(CarbonMain);
-            Directory.CreateDirectory(RootDir);
-        #if DEBUG
-            Directory.CreateDirectory(Path.Combine(RootDir, "debug_gen"));
-        #endif
-            foreach (Type type in Assembly.GetExecutingAssembly().GetTypes().Where(x=> typeof(BaseConverter).IsAssignableFrom(x) && !x.IsAbstract))
-            {
-                //if (!typeof(BaseConverter).IsAssignableFrom(type)) {Logger.Info($"{type.FullName}"); continue;}
-                //Logger.Info($"Spawning {type.FullName}");
-                BaseConverter cv = (BaseConverter)Activator.CreateInstance(type);
-                if (Converters.TryGetValue(cv.Path, out BaseConverter dup))
-                {
-                    Logger.Error($"Duplicate converter {type.FullName} > {dup.GetType().FullName}");
-                    continue;
-                }
-                Logger.Info($"Adding converter {cv.Path} > {type.FullName}");
-                cv.FullPath = Path.Combine(RootDir, cv.Path);
-                Directory.CreateDirectory(cv.FullPath);
-                Converters.Add(cv.Path, cv);
-            }
+
+            Logger.Info($"Adding converter {cv.Path} > {type.FullName}");
+            cv.FullPath = Path.Combine(RootDir, cv.Path);
+            Directory.CreateDirectory(cv.FullPath);
+            Converters.Add(cv.Path, cv);
         }
     }
 

@@ -30,12 +30,9 @@ public class HarmonyBlacklist : BaseHarmonyPatch
                 if (dc.Name == "HarmonyPatch" && dc.Scope is SerializedAssemblyReference aref &&
                     aref.Name == HarmonyASM)
                 {
-                    //Logger.Info($"found patch {sig.FixedArguments[0].Element.GetType().FullName}");
-                    //Console.WriteLine("attr call");
                     if (sig.FixedArguments.Count > 1 && sig.FixedArguments[0].Element is TypeDefOrRefSignature tr &&
                         sig.FixedArguments[1].Element is Utf8String ats)
                     {
-                        //Logger.Info($"Found patch: {tr.FullName} | {ats}");
                         if (!PatchWhitelist.IsPatchAllowed(tr, ats))
                         {
                             Logger.Info($"Unpatching {td.FullName}::{ats}");
@@ -59,14 +56,6 @@ public class HarmonyBlacklist : BaseHarmonyPatch
 
             if (invalid)
             {
-                //Debug.Log($"Removing patch: {asm.CorLibTypeFactory.FromName("System", "ObsoleteAttribute") == null}");
-                /*td.CustomAttributes.Add(
-                    new CustomAttribute(
-                        new MemberReference(asm.CorLibTypeFactory.FromName("System", "ObsoleteAttribute").Type,
-                            ".ctor",
-                            new MethodSignature(
-                                CallingConventionAttributes.Default | CallingConventionAttributes.HasThis,
-                                asm.CorLibTypeFactory.Void, new TypeSignature[] { }))));*/
                 td.CustomAttributes.Add(new CustomAttribute(asm.CorLibTypeFactory.CorLibScope.CreateTypeReference( // black magic
                     "System", "ObsoleteAttribute").CreateMemberReference(".ctor",
                     MethodSignature.CreateInstance(asm.CorLibTypeFactory.Void)).ImportWith(importer)));
@@ -85,7 +74,6 @@ public class HarmonyBlacklist : BaseHarmonyPatch
             if (type.FullName == "ServerMgr" && type.Scope is SerializedAssemblyReference aref &&
                 aref.Name == "Assembly-CSharp" && method == "UpdateServerInformation")
             {
-                //Debug.Log("found stupid patch >:(");
                 return false;
             }
 
