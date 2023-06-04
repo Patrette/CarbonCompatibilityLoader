@@ -3,3 +3,6 @@
 .idea/
 .vs/
 packages/
+workspace/
+nuget_cache/
+BootstrapGen/build/

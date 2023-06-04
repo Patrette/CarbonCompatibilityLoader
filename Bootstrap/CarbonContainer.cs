@@ -17,12 +17,11 @@ public static class CarbonContainer
         Bootstrap.logger.Info("Loading dependencies");
         foreach (byte[] dep in deps_raw)
         {
-            Assembly asm = Assembly.Load(dep);
-            AssemblyName asm_name = asm.GetName();
+            AssemblyName asm_name = Assembly.Load(dep).GetName();
             Bootstrap.logger.Info($"Loaded: {asm_name.Name}, {asm_name.Version}");
         }
         
-        Bootstrap.logger.Info($"Loading core version {core_version} {core_raw == null}");
+        Bootstrap.logger.Info($"Loading core version {core_version}");
         
         Assembly core = Assembly.Load(core_raw);
         
@@ -45,7 +44,7 @@ public static class CarbonContainer
         foreach (Type type in types)
         {
             ICarbonExtension ext = (ICarbonExtension)Activator.CreateInstance(type);
-            ext.GetType().GetField("SelfASMRaw", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, core_raw);
+            type.GetField("SelfASMRaw", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, core_raw);
             ext.Awake(EventArgs.Empty);
             ext.OnLoaded(EventArgs.Empty);
         }

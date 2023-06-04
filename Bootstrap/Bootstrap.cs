@@ -33,7 +33,6 @@ public static class Bootstrap
     public const string extensionResourceName = "core.dll";
     public const string infoResourceName = "info.json";
     public const string dependencyFormatString = "dep_{0}.dll";
-    public static AssemblyDefinition selfDef;
     public static ILogger logger;
     public static AssemblyManifest asmInfo;
     public static DownloadManifest downloadInfo;
@@ -137,6 +136,8 @@ public static class Bootstrap
         asmInfo = TryGetResourceString(infoResourceName, selfAsm, out string infoStr) ? JsonConvert.DeserializeObject<AssemblyManifest>(infoStr) : new AssemblyManifest();
         bool needsRepack = false;
         bool updateFail = true;
+        byte[] newExtData = null;
+        byte[] newBootstrapData = null;
         if (downloadInfo == null)
         {
             logger.Info("Downloading latest version info");
@@ -151,7 +152,7 @@ public static class Bootstrap
         if (downloadInfo.extensionVersion != asmInfo.extensionVersion && extData == null)
         {
             logger.Info($"Downloading extension version {downloadInfo.extensionVersion} > {asmInfo.extensionVersion}");
-            if (!AssemblyDownloader.DownloadBytesFromGithubRelease(branch, downloadInfo.extensionName, out extData))
+            if (!AssemblyDownloader.DownloadBytesFromGithubRelease(branch, downloadInfo.extensionName, out newExtData))
             {
                 logger.Error("Failed to download extension");
                 goto end;
@@ -171,7 +172,7 @@ public static class Bootstrap
         if (downloadInfo.bootstrapVersion != VersionString && bootstrapData == null)
         {
             logger.Info($"Downloading bootstrap version {downloadInfo.bootstrapVersion} > {VersionString}");
-            if (!AssemblyDownloader.DownloadBytesFromGithubRelease(branch, downloadInfo.bootstrapName, out bootstrapData))
+            if (!AssemblyDownloader.DownloadBytesFromGithubRelease(branch, downloadInfo.bootstrapName, out newBootstrapData))
             {
                 logger.Error("Failed to download bootstrap");
                 goto end;
@@ -189,12 +190,12 @@ public static class Bootstrap
                 if (!asmDep.LoadDataFromASM(selfAsm))
                 {
                     logger.Error($"Failed to find dependency {asmDep.id} version {asmDep.version}, downloading");
-                    return;
+                    goto dl;
                 }
                 newDeps.Add(asmDep);
                 continue;
             }
-            
+            dl:
             AssemblyManifest.ASMDependency nd = dep.ToASM();
             if (!AssemblyDownloader.DownloadNuGetPackage(nd.id, nd.version, out nd.data))
             {
@@ -205,9 +206,22 @@ public static class Bootstrap
             
             needsRepack = true;
         }
-
+        
+        asmInfo.dependencies.Clear();
         asmInfo.dependencies = newDeps;
-        asmInfo.extensionVersion = downloadInfo.extensionVersion;
+
+        if (!load) asmInfo.extensionVersion = downloadInfo.extensionVersion;
+
+        if (newExtData != null)
+        {
+            asmInfo.extensionVersion = downloadInfo.extensionVersion;
+            extData = newExtData;
+        }
+
+        if (newBootstrapData != null)
+        {
+            bootstrapData = newBootstrapData;
+        }
 
         asmInfo.valid = true;
 
@@ -218,33 +232,46 @@ public static class Bootstrap
             logger.Info("Repacking assembly");
             
             AssemblyDefinition asmDef;
-            Stream asmStream;
-            if (bootstrapData == null)
+            Stream asmStream = null;
+            try
             {
-                asmStream = new FileStream(asmReadPath, FileMode.Open, FileAccess.Read, FileShare.Read);
-            }
-            else
-            {
-                asmStream = new MemoryStream(bootstrapData);
-            }
-            asmDef = AssemblyDefinition.ReadAssembly(asmStream);
-
-            asmDef.MainModule.Resources.Clear();
-            asmDef.MainModule.AddLZ4Resource(extensionResourceName, extData);
-            int index = 0;
-            foreach (AssemblyManifest.ASMDependency dep in asmInfo.dependencies)
-            {
-                foreach (byte[] data in dep.data)
+                if (bootstrapData == null)
                 {
-                    asmDef.MainModule.AddLZ4Resource(string.Format(dependencyFormatString, index), data);
-                    dep.installed.Add(index);
-
-                    index++;
+                    asmStream = new FileStream(asmReadPath, FileMode.Open, FileAccess.Read, FileShare.Read);
                 }
+                else
+                {
+                    asmStream = new MemoryStream(bootstrapData);
+                }
+
+                asmDef = AssemblyDefinition.ReadAssembly(asmStream);
+
+                asmDef.MainModule.Resources.Clear();
+                asmDef.MainModule.AddLZ4Resource(extensionResourceName, extData);
+                int index = 0;
+                foreach (AssemblyManifest.ASMDependency dep in asmInfo.dependencies)
+                {
+                    foreach (byte[] data in dep.data)
+                    {
+                        asmDef.MainModule.AddLZ4Resource(string.Format(dependencyFormatString, index), data);
+                        dep.installed.Add(index);
+
+                        index++;
+                    }
+                }
+
+                asmDef.MainModule.AddResource(infoResourceName,
+                    Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(asmInfo, Formatting.Indented)));
+                asmDef.Write(asmWritePath);
             }
-            asmDef.MainModule.AddResource(infoResourceName, Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(asmInfo, Formatting.Indented)));
-            asmDef.Write(asmWritePath);
-            asmStream.Dispose();
+            catch (Exception e)
+            {
+                logger.Error($"Failed to repack assembly: {e}");
+            }
+            finally
+            {
+                asmStream?.Dispose();
+            }
         }
         end:
         if (!asmInfo.valid || !asmInfo.EnsureResolved(selfAsm, ref extData))

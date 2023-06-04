@@ -1,0 +1,18 @@
+{
+  "extensionName": "CarbonCompatibilityLoader.dll",
+  "bootstrapName": "CCLBootstrap.dll",
+  "dependencies": [
+    {
+      "id": "AsmResolver"
+    },
+    {
+      "id": "AsmResolver.DotNet"
+    },
+    {
+      "id": "AsmResolver.PE"
+    },
+    {
+      "id": "AsmResolver.PE.File"
+    }
+  ]
+}

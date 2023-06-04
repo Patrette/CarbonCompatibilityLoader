@@ -85,7 +85,7 @@ public class DownloadManifest
         public AssemblySource type;
         public string id;
         public string version;
-        public string url;
+        //public string url;
 
         public AssemblyManifest.ASMDependency ToASM() => new AssemblyManifest.ASMDependency()
         {
@@ -107,7 +107,7 @@ public class DownloadManifest
 
 public enum AssemblySource
 {
-    NuGet = 1,
+    NuGet = 0,
     //DirectURL = 2,
     
 }
