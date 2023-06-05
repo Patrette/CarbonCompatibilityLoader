@@ -22,6 +22,9 @@ public class HarmonyConverter : BaseConverter
         // harmony
         new HarmonyBlacklist(),
         
+        // entrypoint
+        new HarmonyEntrypoint(),
+        
         //common
         new AssemblyVersionPatch()
     };

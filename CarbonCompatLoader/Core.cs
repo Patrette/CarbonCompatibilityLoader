@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace CarbonCompatLoader;
 
-public class CCLCore : ICarbonExtension
+internal class CCLCore : ICarbonExtension
 {
     internal static byte[] SelfASMRaw = null;
     void ICarbonAddon.Awake(EventArgs args)

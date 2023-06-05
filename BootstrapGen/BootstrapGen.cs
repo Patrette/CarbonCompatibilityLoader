@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Xml;
 using Mono.Options;
 using Newtonsoft.Json;
@@ -28,9 +27,11 @@ public static class BootstrapGen
     public const string BuildConfiguration =
         #if DEBUG
             "Debug"
-    #elif RELEASE
+        #elif RELEASE
             "Release"
-    #endif
+        #else
+            this should not happen
+        #endif
         ;
     public static List<XMLPackage> ParsePackagesXML(string data)
     {
@@ -63,22 +64,13 @@ public static class BootstrapGen
         return op;
     }
 
-    public class XMLPackage
-    {
-        public string id;
-        public string version;
-
-        public XMLPackage(string id, string version)
-        {
-            this.id = id;
-            this.version = version;
-        }
-    }
+    public record XMLPackage(string id, string version);
     public static void Main(string[] args)
     {
         Bootstrap.logger = new ConsoleLogger();
         string inputPath = null;
-        string outputPath = null;
+        //string outputPath = null;
+        List<string> outPaths = new List<string>();
         string NuGetCache = null;
         string ExtPath = null;
         string infoPath = null;
@@ -87,7 +79,7 @@ public static class BootstrapGen
         OptionSet optionSet = new OptionSet()
         {
             { "in|input|i=", x => { inputPath = x;} },
-            //{ "o|out|op|output=", x => { outputPath = x;} },
+            { "o|out|op|output=", x => { outPaths.Add(x);} },
             { "nuget|ng=", x => { NuGetCache = x;} },
             { "ext|ep=", x => { ExtPath = x;} },
             { "info=", x => { infoPath = x;} },
@@ -142,10 +134,17 @@ public static class BootstrapGen
 
         byte[] extData = File.ReadAllBytes(ExtPath);
 
+        byte[] bootstrapData = File.ReadAllBytes(inputPath);
+
         File.WriteAllBytes(Path.Combine(buildPath, Bootstrap.downloadInfo.extensionName), extData);
         
         File.WriteAllText(Path.Combine(buildPath, "info.json"), JsonConvert.SerializeObject(Bootstrap.downloadInfo, Formatting.Indented));
         
-        Bootstrap.Run(inputPath, Path.Combine(buildPath, Bootstrap.downloadInfo.bootstrapName), bootstrapData: File.ReadAllBytes(inputPath), extData: extData);
+        Bootstrap.Run(inputPath, Path.Combine(buildPath, Bootstrap.downloadInfo.bootstrapName), out byte[] asmGenData, bootstrapData: bootstrapData, extData: extData);
+
+        foreach (string op in outPaths)
+        {
+            File.WriteAllBytes(op, asmGenData);
+        }
     }
 }

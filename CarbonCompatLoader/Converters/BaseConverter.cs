@@ -13,7 +13,7 @@ public abstract class BaseConverter
     public abstract List<IASMPatch> patches { get;}
 
     public abstract string Path { get; }
-
+    public virtual bool PluginReference => false;
     public string FullPath = null;
     public struct GenInfo
     {

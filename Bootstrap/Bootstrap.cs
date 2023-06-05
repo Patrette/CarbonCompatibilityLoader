@@ -112,7 +112,7 @@ public static class Bootstrap
     }
     public static void AddResource(this ModuleDefinition module, string name, byte[] bytes)
     {
-        EmbeddedResource er = new EmbeddedResource(name, Mono.Cecil.ManifestResourceAttributes.Public, bytes);
+        EmbeddedResource er = new EmbeddedResource(name, Mono.Cecil.ManifestResourceAttributes.Private, bytes);
         module.Resources.Add(er);
     }
     public static void AddLZ4Resource(this ModuleDefinition module, string name, byte[] data)
@@ -124,20 +124,20 @@ public static class Bootstrap
                 lz4.Write(data, 0, data.Length);
                 lz4.Flush();
                 EmbeddedResource er =
-                    new EmbeddedResource(name, Mono.Cecil.ManifestResourceAttributes.Public, ms.ToArray());
+                    new EmbeddedResource(name, Mono.Cecil.ManifestResourceAttributes.Private, ms.ToArray());
                 module.Resources.Add(er);
             }
         }
     }
-    public static void Run(string asmReadPath, string asmWritePath, string branch = "prod", byte[] extData = null, byte[] bootstrapData = null, bool load = false)
+    public static void Run(string asmReadPath, string asmWritePath, out byte[] asmOut, string branch = "prod", byte[] extData = null, byte[] bootstrapData = null, bool load = false)
     {
+        asmOut = null;
         logger.Info($"Input: {asmReadPath}");
         logger.Info($"Output: {asmWritePath}");
         asmInfo = TryGetResourceString(infoResourceName, selfAsm, out string infoStr) ? JsonConvert.DeserializeObject<AssemblyManifest>(infoStr) : new AssemblyManifest();
         bool needsRepack = false;
         bool updateFail = true;
         byte[] newExtData = null;
-        byte[] newBootstrapData = null;
         if (downloadInfo == null)
         {
             logger.Info("Downloading latest version info");
@@ -172,7 +172,7 @@ public static class Bootstrap
         if (downloadInfo.bootstrapVersion != VersionString && bootstrapData == null)
         {
             logger.Info($"Downloading bootstrap version {downloadInfo.bootstrapVersion} > {VersionString}");
-            if (!AssemblyDownloader.DownloadBytesFromGithubRelease(branch, downloadInfo.bootstrapName, out newBootstrapData))
+            if (!AssemblyDownloader.DownloadBytesFromGithubRelease(branch, downloadInfo.bootstrapName, out bootstrapData))
             {
                 logger.Error("Failed to download bootstrap");
                 goto end;
@@ -218,11 +218,6 @@ public static class Bootstrap
             extData = newExtData;
         }
 
-        if (newBootstrapData != null)
-        {
-            bootstrapData = newBootstrapData;
-        }
-
         asmInfo.valid = true;
 
         updateFail = false;
@@ -260,9 +255,14 @@ public static class Bootstrap
                     }
                 }
 
-                asmDef.MainModule.AddResource(infoResourceName,
-                    Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(asmInfo, Formatting.Indented)));
-                asmDef.Write(asmWritePath);
+                asmDef.MainModule.AddResource(infoResourceName, Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(asmInfo, Formatting.Indented)));
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    asmDef.Write(ms);
+                    asmOut = ms.ToArray();
+                    File.WriteAllBytes(asmWritePath, asmOut);
+                    
+                }
             }
             catch (Exception e)
             {

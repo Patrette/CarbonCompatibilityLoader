@@ -37,16 +37,17 @@ public static class MainConverter
             File.WriteAllBytes(Path.Combine(RootDir, "debug_gen", fileName), data);
         #endif
         Assembly asm = Assembly.Load(data);
-        if (!PluginReferenceHandler.RefCache.ContainsKey(name))
-        {
-            using MemoryStream dllStream = new MemoryStream(data);
-            PluginReferenceHandler.RefCache.Add(name, MetadataReference.CreateFromStream(dllStream));
-            //Logger.Info($"Added reference: {name}");
-        }
-        else
-        {
-            Logger.Error($"Cannot add {name} to the ref cache because it already exists??");
-        }
+        if (converter.PluginReference)
+            if (!PluginReferenceHandler.RefCache.ContainsKey(name))
+            {
+                using MemoryStream dllStream = new MemoryStream(data);
+                PluginReferenceHandler.RefCache.Add(name, MetadataReference.CreateFromStream(dllStream));
+                //Logger.Info($"Added reference: {name}");
+            }
+            else
+            {
+                Logger.Error($"Cannot add {name} to the ref cache because it already exists??");
+            }
         
         Type[] types;
         try

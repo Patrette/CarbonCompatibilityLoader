@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using API.Assembly;
 using Carbon.Core;
 using UnityEngine;
-using Logger = Carbon.Logger;
 
 namespace CarbonCompatLoader.Bootstrap;
 
@@ -34,15 +32,10 @@ public static class CarbonContainer
         {
             types = e.Types;
         }
-
-        types = types.Where(x => typeof(ICarbonExtension).IsAssignableFrom(x) && !x.IsAbstract).ToArray();
-        if (types.Length == 0)
-        {
-            Bootstrap.logger.Error($"No entrypoint for core?!");
-            return;
-        }
+        
         foreach (Type type in types)
         {
+            if (type.IsAbstract || !typeof(ICarbonExtension).IsAssignableFrom(type)) continue;
             ICarbonExtension ext = (ICarbonExtension)Activator.CreateInstance(type);
             type.GetField("SelfASMRaw", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, core_raw);
             ext.Awake(EventArgs.Empty);
@@ -75,7 +68,7 @@ public static class CarbonContainer
             Bootstrap.logger = new UnityLogger();
             string path = Path.Combine(Defines.GetExtensionsFolder(),
                 typeof(CarbonEntrypoint).Assembly.GetName().Name + ".dll");
-            Bootstrap.Run(path, path, load: true);
+            Bootstrap.Run(path, path, out byte[] _, load: true);
         }
 
         void ICarbonAddon.OnLoaded(EventArgs args)

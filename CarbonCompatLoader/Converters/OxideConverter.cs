@@ -26,4 +26,5 @@ public class OxideConverter : BaseConverter
         new AssemblyVersionPatch()
     };
     public override string Path => "oxide";
+    public override bool PluginReference => true;
 }

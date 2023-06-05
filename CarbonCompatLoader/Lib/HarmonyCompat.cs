@@ -14,7 +14,7 @@ public static class HarmonyCompat
     internal const string log = "[CHA] ";
     internal const string patch_str = log + "Patching method {0}::{1}";
     internal const string complete = log + "Patch complete\n";
-    
+
     [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
     internal static class HarmonyLoader
     {
@@ -25,6 +25,8 @@ public static class HarmonyCompat
 
             internal string HarmonyId { get; set; }
 
+            public Harmony Harmony { get; set; }
+
             internal Assembly Assembly { get; set; }
 
             internal Type[] AllTypes { get; set; }
@@ -34,7 +36,7 @@ public static class HarmonyCompat
 
         internal static List<HarmonyLoader.HarmonyMod> loadedMods = new List<HarmonyLoader.HarmonyMod>();
     }
-    
+
     [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
     internal struct HarmonyModInfo
     {
@@ -50,7 +52,7 @@ public static class HarmonyCompat
     internal class OnHarmonyModUnloadedArgs
     {
     }
-    
+
     [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
     internal interface IHarmonyModHooks
     {
@@ -107,41 +109,48 @@ public static class HarmonyCompat
             if (methodsToPatch.Count > 1) Debug.Log(log + $"Bulk patching {methodsToPatch.Count} methods");
             foreach (MethodBase original in methodsToPatch)
             {
-            #if DEBUG
-                Debug.Log(string.Format(patch_str,
-                    original.DeclaringType == null ? "NULL" : original.DeclaringType.FullName, original.Name));
-            #endif
-                PatchProcessor patcher = new PatchProcessor(instance, original);
-
-                if (postfix != null)
+                try
                 {
                 #if DEBUG
-                    Debug.Log(log + $"> postfix");
+                    Debug.Log(string.Format(patch_str,
+                        original.DeclaringType == null ? "NULL" : original.DeclaringType.FullName, original.Name));
                 #endif
-                    patcher.AddPostfix(postfix);
-                }
+                    PatchProcessor patcher = new PatchProcessor(instance, original);
 
-                if (prefix != null)
-                {
+                    if (postfix != null)
+                    {
+                    #if DEBUG
+                        Debug.Log(log + $"> postfix");
+                    #endif
+                        patcher.AddPostfix(postfix);
+                    }
+
+                    if (prefix != null)
+                    {
+                    #if DEBUG
+                        Debug.Log(log + $"> prefix");
+                    #endif
+                        patcher.AddPrefix(prefix);
+                    }
+
+                    if (transpiler != null)
+                    {
+                    #if DEBUG
+                        Debug.Log(log + $"> transpiler");
+                    #endif
+                        patcher.AddTranspiler(transpiler);
+                    }
+
+                    patcher.Patch();
+
                 #if DEBUG
-                    Debug.Log(log + $"> prefix");
+                    Debug.Log(complete);
                 #endif
-                    patcher.AddPrefix(prefix);
                 }
-
-                if (transpiler != null)
+                catch (Exception e)
                 {
-                #if DEBUG
-                    Debug.Log(log + $"> transpiler");
-                #endif
-                    patcher.AddTranspiler(transpiler);
+                    Debug.LogError($"Failed to patch {original.Name}");
                 }
-
-                patcher.Patch();
-
-            #if DEBUG
-                Debug.Log(complete);
-            #endif
             }
         }
         else if (single != null)
