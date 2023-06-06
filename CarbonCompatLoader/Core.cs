@@ -17,6 +17,7 @@ internal class CCLCore : ICarbonExtension
         catch (Exception e)
         {
             Debug.LogError(e);
+            return;
         }
         Logger.Info("Loading mods");
         MainConverter.LoadAll();

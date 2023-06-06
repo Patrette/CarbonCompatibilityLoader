@@ -55,6 +55,7 @@
         <Compile Include="Patches\Harmony\HarmonyTypeRef.cs" />
         <Compile Include="Patches\IASMPatch.cs" />
         <Compile Include="Patches\Oxide\BaseOxidePatch.cs" />
+        <Compile Include="Patches\Oxide\OxideEntrypoint.cs" />
         <Compile Include="Patches\Oxide\OxideILSwitch.cs" />
         <Compile Include="Patches\Oxide\OxideTypeRef.cs" />
         <Compile Include="PluginReferenceHandler.cs" />

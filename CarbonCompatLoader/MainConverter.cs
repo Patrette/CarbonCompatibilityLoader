@@ -37,12 +37,11 @@ public static class MainConverter
             File.WriteAllBytes(Path.Combine(RootDir, "debug_gen", fileName), data);
         #endif
         Assembly asm = Assembly.Load(data);
-        if (converter.PluginReference)
+        if (converter.PluginReference) // harmony mods won't be used as plugin references
             if (!PluginReferenceHandler.RefCache.ContainsKey(name))
             {
                 using MemoryStream dllStream = new MemoryStream(data);
                 PluginReferenceHandler.RefCache.Add(name, MetadataReference.CreateFromStream(dllStream));
-                //Logger.Info($"Added reference: {name}");
             }
             else
             {
@@ -79,7 +78,23 @@ public static class MainConverter
         foreach (Assembly asm in AppDomain.CurrentDomain.GetAssemblies())
         {
             if (asm == null) continue;
-            if (asm.GetName().Name.StartsWith("Carbon_0.")) CarbonMain = asm;
+            AssemblyName asmName = asm.GetName();
+            if (asmName.Name.StartsWith("Carbon_0."))
+            {
+                CarbonMain = asm;
+            #if DEBUG
+                Logger.Info($"Found assembly: {asmName.Name}");
+            #endif
+                break;
+            }
+        #if DEBUG
+            Logger.Error($"Wrong assembly: {asmName.Name}");
+        #endif
+        }
+
+        if (CarbonMain == null)
+        {
+            throw new NullReferenceException("Failed to find Carbon.dll??");
         }
 
         PluginReferenceHandler.ApplyPatch(CarbonMain);

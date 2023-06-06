@@ -64,7 +64,6 @@ public static class CodeGenHelpers
                 {
                     if (!arg.ParameterType.IsValueType)
                     {
-                        Logger.Info("adding null");
                         IL.Add(new CilInstruction(CilOpCodes.Ldnull));
                         continue;
                     }
@@ -84,35 +83,30 @@ public static class CodeGenHelpers
             {
                 TypeDefinition type = instance.Key;
                 List<MethodDefinition> calls = instance.Value;
-                Logger.Info($"Adding newobj");
                 IL.Add(new CilInstruction(CilOpCodes.Newobj, type.Methods.First(x=>x.Parameters.Count == 0 && x.Name == ".ctor")));
                 if (calls.Count > 1)
                 {
                     for (int i = 0; i < calls.Count-1; i++) // probably a bad idea but who cares
                     {
-                        Logger.Info("Adding dup");
                         IL.Add(new CilInstruction(CilOpCodes.Dup));
                     }
                 }
 
                 foreach (MethodDefinition method in calls)
                 {
-                    Logger.Info("Adding callvirt");
                     foreach (Parameter arg in method.Parameters)
                     {
                         if (!arg.ParameterType.IsValueType)
                         {
-                            Logger.Info("adding null");
                             IL.Add(new CilInstruction(CilOpCodes.Ldnull));
                             continue;
                         }
     
-                        Logger.Error($"Non value type: {arg.ParameterType.ElementType.ToString()}");
+                        Logger.Error($"Non value type: {arg.ParameterType.ElementType.ToString()}??");
                     }
                     IL.Add(new CilInstruction(CilOpCodes.Callvirt, method));
                     if (method.Signature.ReturnsValue)
                     {
-                        Logger.Info("Adding pop");
                         IL.Add(new CilInstruction(CilOpCodes.Pop));
                     }
                 }
