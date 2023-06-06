@@ -1,14 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using API.Events;
 using AsmResolver.DotNet;
 using AsmResolver.DotNet.Code.Cil;
 using AsmResolver.DotNet.Signatures;
 using AsmResolver.PE.DotNet.Cil;
-using AsmResolver.PE.DotNet.Metadata.Tables.Rows;
 using CarbonCompatLoader.Converters;
 using HarmonyLib;
+using FieldAttributes = AsmResolver.PE.DotNet.Metadata.Tables.Rows.FieldAttributes;
+using MethodAttributes = AsmResolver.PE.DotNet.Metadata.Tables.Rows.MethodAttributes;
 
 namespace CarbonCompatLoader.Patches.Harmony;
 
@@ -25,15 +27,26 @@ public class HarmonyEntrypoint : BaseHarmonyPatch
             MethodAttributes.CompilerControlled, MethodSignature.CreateInstance(asm.CorLibTypeFactory.Void, importer.ImportTypeSignature(typeof(EventArgs))));
         postHookLoad.CilMethodBody = new CilMethodBody(postHookLoad);
 
+        FieldDefinition loadedField = new FieldDefinition("loaded", FieldAttributes.PrivateScope, new FieldSignature(asm.CorLibTypeFactory.Boolean));
+        
         int postHookIndex = 0;
         
-        CodeGenHelpers.GenerateCarbonEventSubscribe(load.CilMethodBody, importer, ref postHookIndex, CarbonEvent.HooksInstalled, postHookLoad, new CilInstruction(CilOpCodes.Ldarg_0));
+        CodeGenHelpers.GenerateCarbonEventCall(load.CilMethodBody, importer, ref postHookIndex, CarbonEvent.HooksInstalled, postHookLoad, new CilInstruction(CilOpCodes.Ldarg_0));
         
         load.CilMethodBody.Instructions.Add(new CilInstruction(CilOpCodes.Ret));
-        
+        CilInstruction postHookRet = new CilInstruction(CilOpCodes.Ret);
         postHookLoad.CilMethodBody.Instructions.AddRange(new CilInstruction[]
         {
-            new CilInstruction(CilOpCodes.Ldstr, $"__CCL:{guid:N}"),
+            // load check
+            new CilInstruction(CilOpCodes.Ldarg_0),
+            new CilInstruction(CilOpCodes.Ldfld, loadedField),
+            new CilInstruction(CilOpCodes.Brtrue_S, postHookRet.CreateLabel()),
+            new CilInstruction(CilOpCodes.Ldarg_0),
+            new CilInstruction(CilOpCodes.Ldc_I4_1),
+            new CilInstruction(CilOpCodes.Stfld, loadedField),
+            
+            // harmony patch all
+            new CilInstruction(CilOpCodes.Ldstr, $"__CCL:{asm.Assembly.Name}:{guid:N}"),
             new CilInstruction(CilOpCodes.Newobj, importer.ImportMethod(AccessTools.Constructor(typeof(HarmonyLib.Harmony), new Type[]{typeof(string)}))),
             new CilInstruction(CilOpCodes.Callvirt, importer.ImportMethod(AccessTools.Method(typeof(HarmonyLib.Harmony), "PatchAll"))) 
         });
@@ -50,7 +63,8 @@ public class HarmonyEntrypoint : BaseHarmonyPatch
             int multiCallIndex = postHookLoad.CilMethodBody.Instructions.Count;
             CodeGenHelpers.DoMultiMethodCall(postHookLoad.CilMethodBody, ref multiCallIndex, null, input);
         }
-        postHookLoad.CilMethodBody.Instructions.Add(new CilInstruction(CilOpCodes.Ret));
+        postHookLoad.CilMethodBody.Instructions.Add(postHookRet);
         entryDef.Methods.Add(postHookLoad);
+        entryDef.Fields.Add(loadedField);
     }
 }

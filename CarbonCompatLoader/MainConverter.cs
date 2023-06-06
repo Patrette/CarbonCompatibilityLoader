@@ -73,6 +73,7 @@ public static class MainConverter
 
     public static void Initialize()
     {
+        if (Carbonara.CanRun()) Carbonara.Run();
         Converters = new Dictionary<string, BaseConverter>();
         SelfModule = CCLCore.SelfASMRaw != null ? ModuleDefinition.FromBytes(CCLCore.SelfASMRaw) : ModuleDefinition.FromFile(Path.Combine(Defines.GetExtensionsFolder(), typeof(MainConverter).Assembly.GetName().Name+".dll"));
         foreach (Assembly asm in AppDomain.CurrentDomain.GetAssemblies())
@@ -88,7 +89,7 @@ public static class MainConverter
                 break;
             }
         #if DEBUG
-            Logger.Error($"Wrong assembly: {asmName.Name}");
+            //Logger.Error($"Wrong assembly: {asmName.Name}");
         #endif
         }
 

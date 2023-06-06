@@ -4,9 +4,11 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using LZ4;
+using K4os.Compression.LZ4;
+using K4os.Compression.LZ4.Streams;
 using Mono.Cecil;
 using Newtonsoft.Json;
+using UnityEngine;
 
 namespace CarbonCompatLoader.Bootstrap;
 
@@ -107,26 +109,22 @@ public static class Bootstrap
     public static bool TryGetLZ4ResourceStream(string name, Assembly asm, out Stream data)
     {
         if (!TryGetResourceStream(name, asm, out data)) return false;
-        data = new LZ4Stream(data, LZ4StreamMode.Decompress);
+        data = LZ4Stream.Decode(data, interactive:true, leaveOpen:true);
         return true;
     }
     public static void AddResource(this ModuleDefinition module, string name, byte[] bytes)
     {
-        EmbeddedResource er = new EmbeddedResource(name, Mono.Cecil.ManifestResourceAttributes.Private, bytes);
-        module.Resources.Add(er);
+        module.Resources.Add(new EmbeddedResource(name, ManifestResourceAttributes.Private, bytes));
     }
     public static void AddLZ4Resource(this ModuleDefinition module, string name, byte[] data)
     {
         using (MemoryStream ms = new MemoryStream())
         {
-            using (LZ4Stream lz4 = new LZ4Stream(ms, LZ4StreamMode.Compress))
+            using (LZ4EncoderStream lz4 = LZ4Stream.Encode(ms, LZ4Level.L12_MAX))
             {
                 lz4.Write(data, 0, data.Length);
-                lz4.Flush();
-                EmbeddedResource er =
-                    new EmbeddedResource(name, Mono.Cecil.ManifestResourceAttributes.Private, ms.ToArray());
-                module.Resources.Add(er);
             }
+            module.Resources.Add(new EmbeddedResource(name, ManifestResourceAttributes.Private, ms.ToArray()));
         }
     }
     public static void Run(string asmReadPath, string asmWritePath, out byte[] asmOut, string branch = "prod", byte[] extData = null, byte[] bootstrapData = null, bool load = false)

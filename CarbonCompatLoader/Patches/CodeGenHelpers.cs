@@ -37,7 +37,7 @@ public static class CodeGenHelpers
         typeDef = entrypoint;
     }
     
-    public static void GenerateCarbonEventSubscribe(CilMethodBody body, ReferenceImporter importer, ref int index, CarbonEvent eventId, MethodDefinition method, CilInstruction self = null)
+    public static void GenerateCarbonEventCall(CilMethodBody body, ReferenceImporter importer, ref int index, CarbonEvent eventId, MethodDefinition method, CilInstruction self = null, string event_method = "Subscribe")
     {
         self ??= new CilInstruction(CilOpCodes.Ldnull);
         List<CilInstruction> IL = new List<CilInstruction>()
@@ -48,7 +48,7 @@ public static class CodeGenHelpers
             self,
             new CilInstruction(CilOpCodes.Ldftn, method),
             new CilInstruction(CilOpCodes.Newobj, importer.ImportMethod(AccessTools.Constructor(typeof(Action<EventArgs>), new Type[] { typeof(object), typeof(IntPtr) }))),
-            new CilInstruction(CilOpCodes.Callvirt, importer.ImportMethod(AccessTools.Method(typeof(API.Events.IEventManager), "Subscribe")))
+            new CilInstruction(CilOpCodes.Callvirt, importer.ImportMethod(AccessTools.Method(typeof(API.Events.IEventManager), event_method)))
         };
         body.Instructions.InsertRange(index, IL);
         index += IL.Count;

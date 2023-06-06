@@ -29,8 +29,8 @@ public class AssemblyManifest
                 using (MemoryStream ms = new MemoryStream())
                 {
                     stream.CopyTo(ms);
-                    data.Add(ms.ToArray());
                     stream.Dispose();
+                    data.Add(ms.ToArray());
                 }
             }
 
@@ -57,8 +57,8 @@ public class AssemblyManifest
                 if (Bootstrap.TryGetLZ4ResourceStream(Bootstrap.extensionResourceName, asm, out Stream data))
                 {
                     data.CopyTo(ms);
-                    extData = ms.ToArray();
                     data.Dispose();
+                    extData = ms.ToArray();
                 }
                 else
                 {

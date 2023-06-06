@@ -190,13 +190,14 @@
             <HintPath>..\..\..\rustserver\RustDedicated_Data\Managed\Ionic.Zip.Reduced.dll</HintPath>
             <Private>False</Private>
         </Reference>
-        <Reference Include="LZ4">
-            <HintPath>..\..\..\rustserver\RustDedicated_Data\Managed\LZ4.dll</HintPath>
-            <Private>False</Private>
+        <Reference Include="K4os.Compression.LZ4, Version=1.2.6.0, Culture=neutral, PublicKeyToken=2186fa9121ef231d, processorArchitecture=MSIL">
+          <HintPath>..\packages\K4os.Compression.LZ4.1.2.6\lib\net46\K4os.Compression.LZ4.dll</HintPath>
         </Reference>
-        <Reference Include="LZ4pn">
-            <HintPath>..\..\..\rustserver\RustDedicated_Data\Managed\LZ4pn.dll</HintPath>
-            <Private>False</Private>
+        <Reference Include="K4os.Compression.LZ4.Streams, Version=1.2.6.0, Culture=neutral, PublicKeyToken=2186fa9121ef231d, processorArchitecture=MSIL">
+          <HintPath>..\packages\K4os.Compression.LZ4.Streams.1.2.6\lib\net46\K4os.Compression.LZ4.Streams.dll</HintPath>
+        </Reference>
+        <Reference Include="K4os.Hash.xxHash, Version=1.0.6.0, Culture=neutral, PublicKeyToken=32cd54395057cec3, processorArchitecture=MSIL">
+          <HintPath>..\packages\K4os.Hash.xxHash.1.0.6\lib\net46\K4os.Hash.xxHash.dll</HintPath>
         </Reference>
         <Reference Include="Melanchall.DryWetMidi">
             <HintPath>..\..\..\rustserver\RustDedicated_Data\Managed\Melanchall.DryWetMidi.dll</HintPath>
@@ -249,6 +250,7 @@
             <HintPath>..\..\..\rustserver\RustDedicated_Data\Managed\MP3Sharp.dll</HintPath>
             <Private>False</Private>
         </Reference>
+        <Reference Include="mscorlib" />
         <Reference Include="MySql.Data">
             <HintPath>..\..\..\rustserver\RustDedicated_Data\Managed\MySql.Data.dll</HintPath>
             <Private>False</Private>
@@ -322,8 +324,7 @@
             <Private>False</Private>
         </Reference>
         <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-            <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
-            <Private>False</Private>
+          <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
         </Reference>
         <Reference Include="System.Collections.Immutable">
             <HintPath>..\..\..\rustserver\RustDedicated_Data\Managed\System.Collections.Immutable.dll</HintPath>
@@ -394,8 +395,7 @@
             <Private>False</Private>
         </Reference>
         <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-            <HintPath>..\packages\System.Memory.4.5.4\lib\net461\System.Memory.dll</HintPath>
-            <Private>False</Private>
+          <HintPath>..\packages\System.Memory.4.5.4\lib\net461\System.Memory.dll</HintPath>
         </Reference>
         <Reference Include="System.Net.Http">
             <HintPath>..\..\..\rustserver\RustDedicated_Data\Managed\System.Net.Http.dll</HintPath>
@@ -406,16 +406,14 @@
             <Private>False</Private>
         </Reference>
         <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-            <HintPath>..\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
-            <Private>False</Private>
+          <HintPath>..\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
         </Reference>
         <Reference Include="System.Runtime">
             <HintPath>..\..\..\rustserver\RustDedicated_Data\Managed\System.Runtime.dll</HintPath>
             <Private>False</Private>
         </Reference>
-        <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-            <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.6.0.0\lib\net461\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
-            <Private>False</Private>
+        <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.4.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+          <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.4.5.3\lib\net461\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
         </Reference>
         <Reference Include="System.Runtime.Serialization">
             <HintPath>..\..\..\rustserver\RustDedicated_Data\Managed\System.Runtime.Serialization.dll</HintPath>
@@ -763,6 +761,7 @@
         </Reference>
     </ItemGroup>
     <ItemGroup>
+      <None Include="App.config" />
       <None Include="packages.config" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

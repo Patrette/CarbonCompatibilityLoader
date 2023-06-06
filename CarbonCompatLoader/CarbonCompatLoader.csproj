@@ -36,6 +36,7 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
     <ItemGroup>
+        <Compile Include="Carbonara.cs" />
         <Compile Include="CodeGen\CodeGenTemplate.cs" />
         <Compile Include="Converters\BaseConverter.cs" />
         <Compile Include="Converters\HarmonyConverter.cs" />

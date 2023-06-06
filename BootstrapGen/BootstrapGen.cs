@@ -45,20 +45,23 @@ public static class BootstrapGen
             string version = null;
             foreach (XmlAttribute attr in node.Attributes)
             {
-                if (attr.Name == "id")
+                switch (attr.Name)
                 {
-                    id = attr.Value;
-                    continue;
+                    case "id":
+                        id = attr.Value;
+                        break;
+                    case "version":
+                        version = attr.Value;
+                        break;
+                    default:
+                        continue;
                 }
-                if (attr.Name == "version")
+                if (id != null && version != null)
                 {
-                    version = attr.Value;
-                    continue;
+                    op.Add(new XMLPackage(id, version));
+                    break;
                 }
             }
-            if (id != null && version != null
-                           //&& !(id.ToLower().StartsWith("system") || id.ToLower().StartsWith("microsoft"))
-                ) op.Add(new XMLPackage(id, version));
         }
 
         return op;
