@@ -1,12 +1,7 @@
-﻿using System;
-using AsmResolver.DotNet;
+﻿using AsmResolver.DotNet;
 using AsmResolver.DotNet.Code.Cil;
-using AsmResolver.DotNet.Serialized;
 using AsmResolver.PE.DotNet.Cil;
 using CarbonCompatLoader.Converters;
-using CarbonCompatLoader.Lib;
-using HarmonyLib;
-using UnityEngine;
 
 namespace CarbonCompatLoader.Patches.Oxide;
 

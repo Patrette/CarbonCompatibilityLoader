@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using API.Events;
 using AsmResolver.DotNet;
 using AsmResolver.DotNet.Code.Cil;

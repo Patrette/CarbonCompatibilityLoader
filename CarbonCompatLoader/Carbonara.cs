@@ -15,10 +15,12 @@ public static class Carbonara
     {
         try
         {
+            //Stopwatch sw = Stopwatch.StartNew();
             string carbonCore = Path.Combine(Defines.GetManagedFolder(),"Carbon.dll");
             if (!File.Exists(carbonCore)) return;
             ModuleDefinition asm = ModuleDefinition.FromFile(carbonCore);
             TypeDefinition initType = asm.TopLevelTypes.First(x => x.Name == "Initializer" && x.Namespace == "Carbon.Core" && x.Interfaces.Any(y=>y.Interface.Name == "ICarbonComponent"));
+            bool updated = false;
             foreach (MethodDefinition method in initType.Methods)
             {
                 CilMethodBody body = method.CilMethodBody;
@@ -27,16 +29,31 @@ public static class Carbonara
                 {
                     CilInstruction CIL = body.Instructions[index];
                     if (CIL.OpCode != CilOpCodes.Ldstr) continue;
-                    foreach (KeyValuePair<string,string> entry in StringOverrides)
+                    if (CIL.Operand is not string op) continue;
+                    foreach (KeyValuePair<string,string> entry in StringReplace)
                     {
-                        if (CIL.Operand is string op)
-                        {
-                            CIL.Operand = op.Replace(entry.Key, entry.Value);
-                        }
+                        string modified = op.Replace(entry.Key, entry.Value);
+                        if (op == modified) continue;
+                        //Logger.Info($"R-Old: {op} R-New: {modified}");
+                        CIL.Operand = modified;
+                        updated = true;
+                        goto next;
                     }
+
+                    if (StringOverrides.TryGetValue(op, out string str))
+                    {
+                        //Logger.Info($"O-Old: {op} O-New: {str}");
+                        CIL.Operand = str;
+                        updated = true;
+                    }
+                    next: ;
                 }
             }
-            asm.Write(carbonCore);
+            
+            //Logger.Info($"Updated: {updated} in {sw.Elapsed.TotalMilliseconds}ms");
+            if (updated) asm.Write(carbonCore);
+            //sw.Start();
+            //Logger.Info($"Total time: {sw.Elapsed.TotalMilliseconds:n0}ms");
         }
         catch
         {
@@ -44,21 +61,26 @@ public static class Carbonara
         }
     }
 
-    public static Dictionary<string, string> StringOverrides = new Dictionary<string, string>()
+    public static readonly Dictionary<string, string> StringOverrides = new Dictionary<string, string>()
     {
-        {"CARBON", "CARBONARA"},
         // thx kulltero
         {@"  ______ _______ ______ ______ _______ _______ ", @"  ______ _______ ______ ______ _______ _______ _______ ______ _______ "}, // line 1
-        {@" |      |   _   |   __ \   __ \       |    |  |", @" |      |   _   |   __ \   __ \       |    |  |   _   |   __ \   _   |"}, // line 1
-        {@" |   ---|       |      <   __ <   -   |       |", @" |   ---|       |      <   __ <   -   |       |       |      <       |"}, // line 1
-        {@" |______|___|___|___|__|______/_______|__|____|", @" |______|___|___|___|__|______/_______|__|____|___|___|___|__|___|___|"}, // line 1
+        {@" |      |   _   |   __ \   __ \       |    |  |", @" |      |   _   |   __ \   __ \       |    |  |   _   |   __ \   _   |"}, // line 2
+        {@" |   ---|       |      <   __ <   -   |       |", @" |   ---|       |      <   __ <   -   |       |       |      <       |"}, // line 3
+        {@" |______|___|___|___|__|______/_______|__|____|", @" |______|___|___|___|__|______/_______|__|____|___|___|___|__|___|___|"}, // line 4
+    };
+
+    public static readonly Dictionary<string, string> StringReplace = new Dictionary<string, string>()
+    {
+        { " CARBON ", " CARBONARA " }
     };
     public static bool CanRun()
     {
     #if DEBUG
         return true;
-    #endif
+    #else
         DateTime time = DateTime.Today;
         return time is { Month: 4, Day: 1 };
+    #endif
     }
 }

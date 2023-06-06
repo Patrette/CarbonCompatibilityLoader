@@ -1,8 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Reflection.Emit;
-using Carbon.Jobs;
 using HarmonyLib;
 using Microsoft.CodeAnalysis;
 

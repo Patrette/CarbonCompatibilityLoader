@@ -8,8 +8,6 @@ using Carbon.Core;
 using CarbonCompatLoader.Converters;
 using HarmonyLib;
 using Microsoft.CodeAnalysis;
-using Steamworks.ServerList;
-using UnityEngine;
 
 namespace CarbonCompatLoader;
 

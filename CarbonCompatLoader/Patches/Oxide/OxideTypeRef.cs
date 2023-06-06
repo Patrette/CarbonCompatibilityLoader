@@ -1,5 +1,4 @@
 ﻿using AsmResolver.DotNet;
-using AsmResolver.DotNet.Serialized;
 using CarbonCompatLoader.Converters;
 
 namespace CarbonCompatLoader.Patches.Oxide;

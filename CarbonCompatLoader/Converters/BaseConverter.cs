@@ -1,10 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 using AsmResolver.DotNet;
 using CarbonCompatLoader.Patches;
-using JetBrains.Annotations;
-using UnityEngine;
 
 namespace CarbonCompatLoader.Converters;
 

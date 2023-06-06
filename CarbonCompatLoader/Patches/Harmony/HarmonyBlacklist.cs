@@ -9,7 +9,6 @@ using AsmResolver.DotNet.Signatures.Types;
 using AsmResolver.PE.DotNet.Cil;
 using CarbonCompatLoader.Converters;
 using Facepunch;
-using UnityEngine;
 
 namespace CarbonCompatLoader.Patches.Harmony;
 
