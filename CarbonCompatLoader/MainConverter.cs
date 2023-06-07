@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using AsmResolver;
 using AsmResolver.DotNet;
+using AsmResolver.DotNet.Serialized;
 using Carbon.Core;
 using CarbonCompatLoader.Converters;
 using HarmonyLib;
@@ -30,7 +32,7 @@ public static class MainConverter
     public static Dictionary<string, BaseConverter> Converters;
     public static void LoadAssembly(string path, string fileName, string name, BaseConverter converter)
     {
-        byte[] data = converter.Convert(ModuleDefinition.FromFile(path));
+        byte[] data = converter.Convert(ModuleDefinition.FromFile(path, new ModuleReaderParameters(EmptyErrorListener.Instance)), out BaseConverter.GenInfo info);
         #if DEBUG
             File.WriteAllBytes(Path.Combine(RootDir, "debug_gen", fileName), data);
         #endif
@@ -45,6 +47,7 @@ public static class MainConverter
             {
                 Logger.Error($"Cannot add {name} to the ref cache because it already exists??");
             }
+        if (info.noEntryPoint) return;
         
         Type[] types;
         try
@@ -78,7 +81,7 @@ public static class MainConverter
         {
             if (asm == null) continue;
             AssemblyName asmName = asm.GetName();
-            if (asmName.Name.StartsWith("Carbon_0."))
+            if (asmName.Name.StartsWith("Carbon_"))
             {
                 CarbonMain = asm;
             #if DEBUG

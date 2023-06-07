@@ -14,12 +14,20 @@ public class OxideConverter : BaseConverter
         new OxideTypeRef(),
         new HarmonyTypeRef(),
         
+        // member ref
+        
+        //new OxideMemberRef(),
+        
         // il switch
         new OxideILSwitch(),
         new HarmonyILSwitch(),
-            
+        
         // harmony
         new HarmonyBlacklist(),
+        
+        // entrypoint
+        
+        new OxideEntrypoint(),
         
         //common
         new AssemblyVersionPatch()

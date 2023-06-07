@@ -17,6 +17,7 @@ public class HarmonyEntrypoint : BaseHarmonyPatch
 {
     public override void Apply(ModuleDefinition asm, ReferenceImporter importer, BaseConverter.GenInfo info)
     {
+        
         Guid guid = Guid.NewGuid();
         List<TypeDefinition> entryPoints = asm.GetAllTypes().Where(x => x.Interfaces.Any(y=>y.Interface?.FullName == "CarbonCompatLoader.Lib.HarmonyCompat+IHarmonyModHooks")).ToList();
         CodeGenHelpers.GenerateEntrypoint(asm, importer, HarmonyStr, guid, out MethodDefinition load, out TypeDefinition entryDef);

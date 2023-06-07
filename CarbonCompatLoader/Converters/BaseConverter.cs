@@ -12,19 +12,21 @@ public abstract class BaseConverter
     public abstract string Path { get; }
     public virtual bool PluginReference => false;
     public string FullPath = null;
-    public struct GenInfo
+    public class GenInfo
     {
         public AssemblyReference selfRef;
+
+        public bool noEntryPoint = false;
 
         public GenInfo(AssemblyReference self)
         {
             selfRef = self;
         }
     }
-    public byte[] Convert(ModuleDefinition asm)
+    public byte[] Convert(ModuleDefinition asm, out GenInfo info)
     {
         ReferenceImporter importer = new ReferenceImporter(asm);
-        GenInfo info = new GenInfo(new AssemblyReference(MainConverter.SelfModule.Assembly).ImportWith(importer));
+        info = new GenInfo(new AssemblyReference(MainConverter.SelfModule.Assembly).ImportWith(importer));
         foreach (IASMPatch patch in patches)
         {
             patch.Apply(asm, importer, info);

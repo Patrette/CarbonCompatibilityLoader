@@ -45,6 +45,7 @@
         <Compile Include="Helpers.cs" />
         <Compile Include="ICarbonCompatExt.cs" />
         <Compile Include="Lib\HarmonyCompat.cs" />
+        <Compile Include="Lib\OxideCompat.cs" />
         <Compile Include="Logger.cs" />
         <Compile Include="MainConverter.cs" />
         <Compile Include="Patches\AssemblyVersionPatch.cs" />

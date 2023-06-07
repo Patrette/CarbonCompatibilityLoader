@@ -6,6 +6,7 @@ using AsmResolver.DotNet;
 using AsmResolver.DotNet.Code.Cil;
 using AsmResolver.PE.DotNet.Cil;
 using Carbon.Core;
+using Facepunch;
 
 namespace CarbonCompatLoader;
 
@@ -37,7 +38,6 @@ public static class Carbonara
                         //Logger.Info($"R-Old: {op} R-New: {modified}");
                         CIL.Operand = modified;
                         updated = true;
-                        goto next;
                     }
 
                     if (StringOverrides.TryGetValue(op, out string str))
@@ -46,7 +46,6 @@ public static class Carbonara
                         CIL.Operand = str;
                         updated = true;
                     }
-                    next: ;
                 }
             }
             
@@ -76,11 +75,11 @@ public static class Carbonara
     };
     public static bool CanRun()
     {
+        if (CommandLine.HasSwitch("-nocarbonara")) return false;
     #if DEBUG
         return true;
     #else
-        DateTime time = DateTime.Today;
-        return time is { Month: 4, Day: 1 };
+        return DateTime.Today is { Month: 4, Day: 1 };
     #endif
     }
 }
