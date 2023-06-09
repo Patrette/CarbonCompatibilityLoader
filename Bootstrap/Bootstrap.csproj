@@ -214,17 +214,8 @@
             <HintPath>..\..\..\rustserver\RustDedicated_Data\Managed\MidiJack.dll</HintPath>
             <Private>False</Private>
         </Reference>
-        <Reference Include="Mono.Cecil, Version=0.11.5.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
-          <HintPath>..\packages\Mono.Cecil.0.11.5\lib\net40\Mono.Cecil.dll</HintPath>
-        </Reference>
-        <Reference Include="Mono.Cecil.Mdb, Version=0.11.5.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
-          <HintPath>..\packages\Mono.Cecil.0.11.5\lib\net40\Mono.Cecil.Mdb.dll</HintPath>
-        </Reference>
-        <Reference Include="Mono.Cecil.Pdb, Version=0.11.5.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
-          <HintPath>..\packages\Mono.Cecil.0.11.5\lib\net40\Mono.Cecil.Pdb.dll</HintPath>
-        </Reference>
-        <Reference Include="Mono.Cecil.Rocks, Version=0.11.5.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
-          <HintPath>..\packages\Mono.Cecil.0.11.5\lib\net40\Mono.Cecil.Rocks.dll</HintPath>
+        <Reference Include="Mono.Cecil">
+          <HintPath>..\..\..\rustserver\carbon\managed\lib\Mono.Cecil.dll</HintPath>
         </Reference>
         <Reference Include="Mono.Data.Sqlite">
             <HintPath>..\..\..\rustserver\RustDedicated_Data\Managed\Mono.Data.Sqlite.dll</HintPath>

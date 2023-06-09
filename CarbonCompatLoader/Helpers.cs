@@ -1,4 +1,5 @@
-﻿using AsmResolver;
+﻿using System;
+using AsmResolver;
 using AsmResolver.DotNet;
 using AsmResolver.DotNet.Code.Cil;
 using AsmResolver.DotNet.Signatures;
@@ -28,6 +29,17 @@ public static class Helpers
         });
         type.Methods.Add(ctor);
         return ctor;
+    }
+    public static bool IsBaseType(this TypeDefinition type, Func<ITypeDefOrRef, bool> call)
+    {
+        if (type.BaseType == null) return false;
+        while (type is { BaseType: not null })
+        {
+            if (call(type.BaseType)) return true;
+            type = type.BaseType as TypeDefinition;
+        }
+
+        return false;
     }
     public static AssemblyReference DefinitionAssembly(this ITypeDescriptor type)
     {

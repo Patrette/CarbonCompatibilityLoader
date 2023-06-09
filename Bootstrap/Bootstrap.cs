@@ -223,7 +223,7 @@ public static class Bootstrap
         {
             logger.Info("Repacking assembly");
             
-            AssemblyDefinition asmDef;
+            AssemblyDefinition asmDef = null;
             Stream asmStream = null;
             try
             {
@@ -268,6 +268,7 @@ public static class Bootstrap
             finally
             {
                 asmStream?.Dispose();
+                asmDef?.Dispose();
             }
         }
         end:

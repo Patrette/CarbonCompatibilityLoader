@@ -24,10 +24,12 @@ public class OxideConverter : BaseConverter
         
         // harmony
         new HarmonyBlacklist(),
-        
+
         // entrypoint
-        
         new OxideEntrypoint(),
+        
+        // plugins
+        new OxidePluginAttr(),
         
         //common
         new AssemblyVersionPatch()

@@ -81,10 +81,10 @@ public static class BootstrapGen
         string rootBuildPath = null;
         OptionSet optionSet = new OptionSet()
         {
-            { "in|input|i=", x => { inputPath = x;} },
+            { "in|input|i=", x => {inputPath = string.Format(x, BuildConfiguration);} },
             { "o|out|op|output=", x => { outPaths.Add(x);} },
             { "nuget|ng=", x => { NuGetCache = x;} },
-            { "ext|ep=", x => { ExtPath = x;} },
+            { "ext|ep=", x => { ExtPath = string.Format(x, BuildConfiguration);} },
             { "info=", x => { infoPath = x;} },
             { "package|packages|pk=", x => { packagesPath = x;} },
             { "bp|build|buildpath=", x => { rootBuildPath = x;} }

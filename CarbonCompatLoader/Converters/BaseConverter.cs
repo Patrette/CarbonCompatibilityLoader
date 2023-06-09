@@ -18,6 +18,8 @@ public abstract class BaseConverter
 
         public bool noEntryPoint = false;
 
+        public string author = null;
+
         public GenInfo(AssemblyReference self)
         {
             selfRef = self;

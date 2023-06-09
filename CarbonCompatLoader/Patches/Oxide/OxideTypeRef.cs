@@ -1,6 +1,5 @@
 ﻿using AsmResolver.DotNet;
 using CarbonCompatLoader.Converters;
-using Oxide.Plugins;
 
 namespace CarbonCompatLoader.Patches.Oxide;
 
@@ -10,6 +9,16 @@ public class OxideTypeRef : BaseOxidePatch
     {
         foreach (TypeReference tw in asm.GetImportedTypeReferences())
         {
+            if (tw.Scope is TypeReference parent)
+            {
+                if (parent.FullName == "Oxide.Plugins.Timer" && tw.Name == "TimerInstance")
+                {
+                    tw.Name = "Timer";
+                    tw.Namespace = "Oxide.Plugins";
+                    tw.Scope = MainConverter.Common.ImportWith(importer);
+                    continue;
+                }
+            }
             if (tw.Scope is AssemblyReference aref && aref.Name.StartsWith("Oxide.") && !aref.Name.ToLower().StartsWith("oxide.ext."))
             {
                 if (tw.Namespace.StartsWith("Newtonsoft.Json"))
@@ -30,6 +39,17 @@ public class OxideTypeRef : BaseOxidePatch
                 {
                     tw.Namespace = "";
                     goto common;
+                }
+                if (tw.FullName is "Oxide.Core.Libraries.Timer" or "Oxide.Plugins.Timer/TimerInstance")
+                {
+                    tw.Name = "Timer";
+                    tw.Namespace = "Oxide.Plugins";
+                    goto common;
+                }
+                if (tw.FullName == "Oxide.Core.Plugins.HookMethodAttribute")
+                {
+                    tw.Namespace = "";
+                    goto sdk;
                 }
                 if (tw.FullName is "Oxide.Plugins.CSharpPlugin" or "Oxide.Core.Plugins.CSPlugin")
                 {

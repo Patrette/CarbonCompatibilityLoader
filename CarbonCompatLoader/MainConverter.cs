@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using AsmResolver;
 using AsmResolver.DotNet;
 using AsmResolver.DotNet.Serialized;
+using Carbon;
 using Carbon.Core;
 using CarbonCompatLoader.Converters;
 using HarmonyLib;
@@ -32,7 +34,11 @@ public static class MainConverter
     public static Dictionary<string, BaseConverter> Converters;
     public static void LoadAssembly(string path, string fileName, string name, BaseConverter converter)
     {
+        Stopwatch sw = Stopwatch.StartNew();
         byte[] data = converter.Convert(ModuleDefinition.FromFile(path, new ModuleReaderParameters(EmptyErrorListener.Instance)), out BaseConverter.GenInfo info);
+        sw.Stop();
+        Logger.Info($"Converted {converter.Path} assembly {name} in {sw.Elapsed.TotalMilliseconds:n0}ms");
+        
         #if DEBUG
             File.WriteAllBytes(Path.Combine(RootDir, "debug_gen", fileName), data);
         #endif

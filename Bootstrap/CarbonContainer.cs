@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using API.Assembly;
+using API.Events;
+using Carbon;
 using Carbon.Core;
-using UnityEngine;
+using JetBrains.Annotations;
 
 namespace CarbonCompatLoader.Bootstrap;
 
@@ -42,33 +45,72 @@ public static class CarbonContainer
             ext.OnLoaded(EventArgs.Empty);
         }
     }
+    [UsedImplicitly]
     class CarbonEntrypoint : ICarbonExtension
     {
+        public static bool loaded = false;
         private class UnityLogger : ILogger
         {
             private const string prefix = "[CCL.Bootstrap] ";
             public void Info(object obj)
             {
-                Debug.Log(prefix+obj);
+                UnityEngine.Debug.Log(prefix+obj);
             }
 
             public void Warn(object obj)
             {
-                Debug.LogWarning(prefix+obj);
+                UnityEngine.Debug.LogWarning(prefix+obj);
             }
 
             public void Error(object obj)
             {
-                Debug.LogError(prefix+obj);
+                UnityEngine.Debug.LogError(prefix+obj);
             }
         }
 
         void ICarbonAddon.Awake(EventArgs args)
         {
+            if (loaded) return;
+            loaded = true;
             Bootstrap.logger = new UnityLogger();
-            string path = Path.Combine(Defines.GetExtensionsFolder(),
-                typeof(CarbonEntrypoint).Assembly.GetName().Name + ".dll");
+            Community.Runtime.Events.Subscribe(CarbonEvent.StartupSharedComplete, NextFrame);
+        }
+
+        void NextFrame(EventArgs _)
+        {
+            string path = FindPath();
             Bootstrap.Run(path, path, out byte[] _, load: true);
+        }
+
+        string FindPath()
+        {
+            try
+            {
+                object list = Community.Runtime.AssemblyEx.Extensions.GetType().GetProperty("_loaded", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(Community.Runtime.AssemblyEx.Extensions, Array.Empty<object>());
+                object[] arr = (object[])list.GetType().GetField("_items", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(list);
+                if (arr.Length == 0) return "error";
+                object first = arr[0];
+                if (first == null) return "error";
+                Type itemRef = first.GetType();
+                PropertyInfo addonRef = itemRef.GetProperty("Addon", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                PropertyInfo fileRef = itemRef.GetProperty("File", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                foreach (object obj in arr)
+                {
+                    if (obj == null) continue;
+                    ICarbonAddon addon = (ICarbonAddon)addonRef.GetValue(obj);
+                    string file = (string)fileRef.GetValue(obj);
+                    if (addon == this)
+                    {
+                        return Path.Combine(Defines.GetExtensionsFolder(), file);
+                    }
+                }
+            }
+            catch
+            {
+                // ignored
+            }
+
+            return "error";
         }
 
         void ICarbonAddon.OnLoaded(EventArgs args)
