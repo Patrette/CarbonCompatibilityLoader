@@ -13,11 +13,14 @@ public class OxidePluginAttr : BaseOxidePatch
         string author = info.author ?? "CCL";
         foreach (TypeDefinition td in asm.GetAllTypes())
         {
-            if (td.IsBaseType(x => x.Name == "RustPlugin" && x.DefinitionAssembly().Name == "Carbon.Common"))
+            if (!td.IsBaseType(x => x.Name == "RustPlugin" && x.DefinitionAssembly().Name == "Carbon.Common")) continue;
+            
             {
                 if (td.Name.ToString().IndexOfAny(System.IO.Path.GetInvalidPathChars()) >= 0)
                 {
-                    td.Name = "plugin_"+Md5.Calculate(td.Name);
+                    string newName = "plugin_" + Md5.Calculate(td.Name);
+                    Logger.Warn($"Plugin \"{td.Name}\" has an invalid name, renaming to {newName}");
+                    td.Name = newName;
                 }
                 CustomAttribute infoAttr = td.CustomAttributes.FirstOrDefault(x =>
                     x.Constructor.DeclaringType.FullName == "InfoAttribute" &&

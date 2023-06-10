@@ -46,10 +46,8 @@ public static class Helpers
         AssemblyReference asmRef = null;
         while (type != null)
         {
-            //Logger.Info($"Type is {type.FullName}");
             type = rec(type, out asmRef);
         }
-        //Logger.Info($"Null: {asmRef == null}");
         return asmRef;
         
         ITypeDescriptor rec(ITypeDescriptor type, out AssemblyReference output)

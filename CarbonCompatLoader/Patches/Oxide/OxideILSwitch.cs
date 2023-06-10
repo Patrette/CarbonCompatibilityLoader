@@ -80,6 +80,7 @@ public class OxideILSwitch : BaseOxidePatch
                         CIL.OpCode = CilOpCodes.Call;
                         continue;
                     }
+                    
                     if (CIL.OpCode == CilOpCodes.Callvirt && 
                         CIL.Operand is MemberReference dref && 
                         dref.Name == "RegisterLibrary" && 

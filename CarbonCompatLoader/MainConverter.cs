@@ -119,9 +119,9 @@ public static class MainConverter
                 Logger.Error($"Duplicate converter {type.FullName} > {dup.GetType().FullName}");
                 continue;
             }
-
-            Logger.Info($"Adding converter {cv.Path} > {type.FullName}");
+            
             cv.FullPath = Path.Combine(RootDir, cv.Path);
+            Logger.Info($"Adding converter {cv.Path} : {cv.FullPath} > {type.FullName}");
             Directory.CreateDirectory(cv.FullPath);
             Converters.Add(cv.Path, cv);
         }
