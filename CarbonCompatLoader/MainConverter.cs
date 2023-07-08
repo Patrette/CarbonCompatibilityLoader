@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
 using AsmResolver;
-using AsmResolver.DotNet;
 using AsmResolver.DotNet.Serialized;
 using Carbon.Core;
 using CarbonCompatLoader.Converters;

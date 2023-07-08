@@ -46,6 +46,7 @@ public static partial class OxideCompat
         //#endif
         setIndexAll.Invoke(null, new object[] {value} );
     }
+
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void AddConsoleCommand1(Oxide.Game.Rust.Libraries.Command Lib, string name, Oxide.Core.Plugins.Plugin plugin, Func<ConsoleSystem.Arg, bool> callback)

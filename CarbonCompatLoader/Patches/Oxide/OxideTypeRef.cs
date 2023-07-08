@@ -1,6 +1,4 @@
-﻿using AsmResolver.DotNet;
-using AsmResolver.DotNet.Signatures;
-using AsmResolver.DotNet.Signatures.Types;
+﻿using AsmResolver.DotNet.Signatures.Types;
 using Carbon.Base;
 using CarbonCompatLoader.Converters;
 using CarbonCompatLoader.Lib;
@@ -11,7 +9,9 @@ public class OxideTypeRef : BaseOxidePatch
 {
     public static List<string> PluginToBaseHookable = new List<string>()
     {
-        "System.Void Oxide.Core.Libraries.Permission::RegisterPermission(System.String, Oxide.Core.Plugins.Plugin)"
+        "System.Void Oxide.Core.Libraries.Permission::RegisterPermission(System.String, Oxide.Core.Plugins.Plugin)",
+        "System.Void Oxide.Core.Libraries.Lang::RegisterMessages(System.Collections.Generic.Dictionary`2<System.String, System.String>, Oxide.Core.Plugins.Plugin, System.String)",
+        "System.String Oxide.Core.Libraries.Lang::GetMessage(System.String, Oxide.Core.Plugins.Plugin, System.String)",
     };
 
     public static bool IsOxideASM(AssemblyReference aref)
@@ -40,6 +40,10 @@ public class OxideTypeRef : BaseOxidePatch
                             }
                         }
                     }
+                    /*else
+                    {
+                        Logger.Info($"call: {mref.FullName}");
+                    }*/
                     continue;
                 }
 

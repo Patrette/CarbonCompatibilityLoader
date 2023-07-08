@@ -1,6 +1,4 @@
-﻿using AsmResolver.DotNet;
-using AsmResolver.DotNet.Signatures;
-using CarbonCompatLoader.Converters;
+﻿using CarbonCompatLoader.Converters;
 using Facepunch.Crypt;
 
 namespace CarbonCompatLoader.Patches.Oxide;

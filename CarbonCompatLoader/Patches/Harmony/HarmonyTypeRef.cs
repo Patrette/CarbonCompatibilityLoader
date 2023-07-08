@@ -1,5 +1,4 @@
-﻿using AsmResolver.DotNet;
-using CarbonCompatLoader.Converters;
+﻿using CarbonCompatLoader.Converters;
 using CarbonCompatLoader.Lib;
 
 namespace CarbonCompatLoader.Patches.Harmony;

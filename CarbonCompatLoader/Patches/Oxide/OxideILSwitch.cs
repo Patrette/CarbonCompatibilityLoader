@@ -1,8 +1,4 @@
 ﻿using System.Reflection;
-using AsmResolver.DotNet;
-using AsmResolver.DotNet.Code.Cil;
-using AsmResolver.DotNet.Signatures;
-using AsmResolver.PE.DotNet.Cil;
 using AsmResolver.PE.DotNet.Metadata.Tables.Rows;
 using CarbonCompatLoader.Converters;
 using CarbonCompatLoader.Lib;
@@ -19,6 +15,9 @@ public class OxideILSwitch : BaseOxidePatch
     private static MethodInfo GetExtensionDirectory = AccessTools.Method(typeof(OxideCompat), nameof(OxideCompat.GetExtensionDirectory));
     private static MethodInfo TimerOnce = AccessTools.Method(typeof(OxideCompat), nameof(OxideCompat.TimerOnce));
     private static MethodInfo TimerRepeat = AccessTools.Method(typeof(OxideCompat), nameof(OxideCompat.TimerRepeat));
+    
+    private static MethodInfo OnAddedToManagerCompat = AccessTools.Method(typeof(OxideCompat), nameof(OxideCompat.OnAddedToManagerCompat));
+    private static MethodInfo OnRemovedFromManagerCompat = AccessTools.Method(typeof(OxideCompat), nameof(OxideCompat.OnRemovedFromManagerCompat));
     
     private static MethodInfo RustPluginTimer = AccessTools.Method(typeof(RustPlugin), "get_timer");
     private static MethodInfo RustPluginTimerDebug = AccessTools.Method(typeof(OxideCompat), nameof(OxideCompat.timer_debug));
@@ -167,6 +166,31 @@ public class OxideILSwitch : BaseOxidePatch
                             new CilInstruction(CilOpCodes.Call, importer.ImportMethod(RustPluginTimer))
                         });
                         //body.Instructions.Insert(index+=3, new CilInstruction(CilOpCodes.Call, importer.ImportMethod(RustPluginTimer)));
+                        continue;
+                    }
+                    
+                    // PluginManagerEvent fix
+                    if (CIL.OpCode == CilOpCodes.Ldfld && 
+                        CIL.Operand is MemberReference href && 
+                        href.Signature is FieldSignature hsig &&
+                        href.Parent is TypeReference htw && 
+                        htw.FullName == "Oxide.Core.Plugins.Plugin" &&
+                        hsig.FieldType.FullName == "Oxide.Core.Plugins.PluginManagerEvent" &&
+                        htw.DefinitionAssembly().Name == MainConverter.Common.Name)
+                    {
+                        switch (href.Name.ToString())
+                        {
+                            case "OnAddedToManager":
+                                CIL.Operand = importer.ImportMethod(OnAddedToManagerCompat);
+                                goto cend;
+                            case "OnRemovedFromManager":
+                                CIL.Operand = importer.ImportMethod(OnRemovedFromManagerCompat);
+                                goto cend;
+                            default: 
+                                continue;
+                        }
+                        cend:
+                        CIL.OpCode = CilOpCodes.Call;
                         continue;
                     }
                 }

@@ -1,5 +1,4 @@
-﻿using AsmResolver.DotNet;
-using CarbonCompatLoader.Patches;
+﻿using CarbonCompatLoader.Patches;
 
 namespace CarbonCompatLoader.Converters;
 

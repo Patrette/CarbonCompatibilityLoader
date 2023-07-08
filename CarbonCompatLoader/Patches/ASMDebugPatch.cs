@@ -1,6 +1,4 @@
 ﻿using System.Diagnostics;
-using AsmResolver.DotNet;
-using AsmResolver.DotNet.Signatures;
 using AsmResolver.DotNet.Signatures.Types;
 using CarbonCompatLoader.Converters;
 
