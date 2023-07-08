@@ -19,6 +19,15 @@ public interface ILogger
 
 public static class Bootstrap
 {
+    public const string BuildConfiguration =
+        #if DEBUG
+            "Debug"
+        #elif RELEASE
+            "Release"
+    #else
+            this should not happen
+    #endif
+        ;
     public static Assembly selfAsm = Assembly.GetExecutingAssembly();
     public readonly static Version Version = null;
     public readonly static string VersionString = null;
@@ -126,8 +135,11 @@ public static class Bootstrap
     public static void Run(string asmReadPath, string asmWritePath, out byte[] asmOut, string branch = "prod", byte[] extData = null, byte[] bootstrapData = null, bool load = false)
     {
         asmOut = null;
+    #if DEBUG
         logger.Info($"Input: {asmReadPath}");
         logger.Info($"Output: {asmWritePath}");
+    #endif
+        logger.Info($"Initializing Bootstrap-{VersionString}-{BuildConfiguration}");
         asmInfo = TryGetResourceString(infoResourceName, selfAsm, out string infoStr) ? JsonConvert.DeserializeObject<AssemblyManifest>(infoStr) : new AssemblyManifest();
         bool needsRepack = false;
         bool updateFail = true;

@@ -9,7 +9,7 @@ internal class CCLCore : ICarbonExtension
     internal static byte[] SelfASMRaw = null;
     void ICarbonAddon.Awake(EventArgs args)
     {
-        Logger.Info("Initializing");
+        Logger.Info($"Initializing CCL-{MainConverter.BuildConfiguration}");
         string name = (string)(args is CarbonEventArgs { Payload: string } cargs ? cargs.Payload : null);
         try
         {

@@ -11,6 +11,15 @@ namespace CarbonCompatLoader;
 
 public static class MainConverter
 {
+    public const string BuildConfiguration =
+        #if DEBUG
+            "Debug"
+        #elif RELEASE
+            "Release"
+        #else
+            this should not happen
+        #endif
+        ;
     public static string RootDir = Path.Combine(Defines.GetRootFolder(), "CCL");
 
     //public static ModuleDefinition SelfModule;

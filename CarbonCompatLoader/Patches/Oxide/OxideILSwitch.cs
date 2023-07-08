@@ -158,7 +158,7 @@ public class OxideILSwitch : BaseOxidePatch
                     {
                         CIL.OpCode = CilOpCodes.Pop;
                         CIL.Operand = null;
-                        body.Instructions.InsertRange(index, new CilInstruction[]
+                        body.Instructions.InsertRange(++index, new CilInstruction[]
                         {
                             new CilInstruction(CilOpCodes.Pop),
                             new CilInstruction(CilOpCodes.Ldarg_0),

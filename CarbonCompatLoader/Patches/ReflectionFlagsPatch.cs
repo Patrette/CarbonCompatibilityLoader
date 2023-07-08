@@ -51,7 +51,7 @@ public class ReflectionFlagsPatch : IASMPatch
                             //Logger.Info($"Changed flags at {XIL.Offset:x8}");
                             goto exit;
                         }
-                        Logger.Error("Failed to find binding flags?!");
+                        Logger.Error($"Failed to find binding flags for {method.FullName} at #IL_{CIL.Offset:X}:{index} in {asm.Name}");
                     }
                     exit: ;
                 }
