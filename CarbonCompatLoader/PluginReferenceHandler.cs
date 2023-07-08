@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Reflection;
+﻿using System.Reflection;
 using HarmonyLib;
 using Microsoft.CodeAnalysis;
 
@@ -16,9 +15,8 @@ internal static class PluginReferenceHandler
 
     internal static void ApplyPatch(Assembly carbonMain)
     {
-        System.Type SCT = carbonMain.GetType("Carbon.Jobs.ScriptCompilationThread");
         MainConverter.HarmonyInstance.Patch(
-            AccessTools.Method(SCT, "_addReferences"), 
+            AccessTools.Method(carbonMain.GetType("Carbon.Jobs.ScriptCompilationThread"), "_addReferences"), 
             postfix:new HarmonyMethod(AccessTools.Method(typeof(PluginReferenceHandler), nameof(ResolveCustomReference))));
         Logger.Warn("Patched carbonara");
     }

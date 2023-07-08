@@ -1,10 +1,9 @@
-﻿using System.Collections.Generic;
-using AsmResolver.DotNet;
-using AsmResolver.DotNet.Serialized;
+﻿using AsmResolver.DotNet;
 using AsmResolver.DotNet.Signatures;
 using AsmResolver.DotNet.Signatures.Types;
 using Carbon.Base;
 using CarbonCompatLoader.Converters;
+using CarbonCompatLoader.Lib;
 
 namespace CarbonCompatLoader.Patches.Oxide;
 
@@ -24,19 +23,30 @@ public class OxideTypeRef : BaseOxidePatch
     {
         foreach (MemberReference mref in asm.GetImportedMemberReferences())
         {
-            if (!IsOxideASM(mref.DeclaringType.DefinitionAssembly())) continue;
+            AssemblyReference aref = mref.DeclaringType.DefinitionAssembly();
             if (mref.Signature is MethodSignature methodSig)
             {
-                if (PluginToBaseHookable.Contains(mref.FullName))
+                if (IsOxideASM(aref))
                 {
-                    for (int index = 0; index < methodSig.ParameterTypes.Count; index++)
+                    if (PluginToBaseHookable.Contains(mref.FullName))
                     {
-                        TypeSignature typeSig = methodSig.ParameterTypes[index];
-                        if (typeSig.FullName == "Oxide.Core.Plugins.Plugin" && IsOxideASM(typeSig.DefinitionAssembly()))
+                        for (int index = 0; index < methodSig.ParameterTypes.Count; index++)
                         {
-                            methodSig.ParameterTypes[index] = importer.ImportTypeSignature(typeof(BaseHookable));
+                            TypeSignature typeSig = methodSig.ParameterTypes[index];
+                            if (typeSig.FullName == "Oxide.Core.Plugins.Plugin" &&
+                                IsOxideASM(typeSig.DefinitionAssembly()))
+                            {
+                                methodSig.ParameterTypes[index] = importer.ImportTypeSignature(typeof(BaseHookable));
+                            }
                         }
                     }
+                    continue;
+                }
+
+                if (aref.Name == "Facepunch.Console" && mref.FullName == "System.Void ConsoleSystem+Index::set_All(ConsoleSystem+Command[])")
+                {
+                    mref.Name = nameof(OxideCompat.SetConsoleSystemIndexAll);
+                    mref.Parent = importer.ImportType(typeof(OxideCompat));
                 }
             }
         }
@@ -45,14 +55,36 @@ public class OxideTypeRef : BaseOxidePatch
         {
             ProcessTypeRef(tw, importer);
         }
-
+        
+        ProcessAttrList(asm.CustomAttributes);
         foreach (TypeDefinition td in asm.GetAllTypes())
         {
-            foreach (CustomAttribute attr in td.CustomAttributes)
+            ProcessAttrList(td.CustomAttributes);
+            
+            foreach (FieldDefinition field in td.Fields)
             {
-                for (int index = 0; index < attr.Signature?.FixedArguments.Count; index++)
+                ProcessAttrList(field.CustomAttributes);
+            }
+
+            foreach (MethodDefinition method in td.Methods)
+            {
+                ProcessAttrList(method.CustomAttributes);
+            }
+
+            foreach (PropertyDefinition prop in td.Properties)
+            {
+                ProcessAttrList(prop.CustomAttributes);
+            }
+        }
+
+        void ProcessAttrList(IList<CustomAttribute> list)
+        {
+            for (int x = 0; x < list.Count; x++)
+            {
+                CustomAttribute attr = list[x];
+                for (int y = 0; y < attr.Signature?.FixedArguments.Count; y++)
                 {
-                    CustomAttributeArgument arg = attr.Signature.FixedArguments[index];
+                    CustomAttributeArgument arg = attr.Signature.FixedArguments[y];
                     if (arg.Element is TypeDefOrRefSignature sig)
                     {
                         ProcessTypeRef(sig.Type as TypeReference, importer);
@@ -67,7 +99,7 @@ public class OxideTypeRef : BaseOxidePatch
         if (tw == null) return;
         if (tw.Scope is TypeReference parent)
         {
-            if (parent.FullName == "Oxide.Plugins.Timer" && tw.Name == "TimerInstance")
+            if (parent.FullName is "Oxide.Plugins.Timers" or "Oxide.Plugins.Timer" && tw.Name == "TimerInstance")
             {
                 tw.Name = "Timer";
                 tw.Namespace = "Oxide.Plugins";
@@ -78,9 +110,24 @@ public class OxideTypeRef : BaseOxidePatch
 
         if (tw.Scope is AssemblyReference aref && IsOxideASM(aref))
         {
+            if (tw.FullName == "Oxide.Core.Event" || tw.FullName.StartsWith("Oxide.Core.Event`"))
+            {
+                tw.Scope = (IResolutionScope)importer.ImportType(typeof(OxideCompat));
+                return;
+            }
+            
             if (tw.Namespace.StartsWith("Newtonsoft.Json"))
             {
                 tw.Scope = MainConverter.Newtonsoft.ImportWith(importer);
+                return;
+            }
+            
+            if (tw.Namespace.StartsWith("ProtoBuf"))
+            {
+                if (tw.Namespace == "ProtoBuf" && tw.Name == "Serializer") 
+                    tw.Scope = MainConverter.protobuf.ImportWith(importer);
+                else
+                    tw.Scope = MainConverter.protobufCore.ImportWith(importer);
                 return;
             }
 
@@ -103,7 +150,7 @@ public class OxideTypeRef : BaseOxidePatch
 
             if (tw.FullName is "Oxide.Core.Libraries.Timer")
             {
-                tw.Name = "Timer";
+                tw.Name = "Timers";
                 tw.Namespace = "Oxide.Plugins";
                 goto common;
             }

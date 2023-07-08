@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using CarbonCompatLoader.Patches;
+﻿using CarbonCompatLoader.Patches;
 using CarbonCompatLoader.Patches.Harmony;
 using CarbonCompatLoader.Patches.Oxide;
 using JetBrains.Annotations;
@@ -25,7 +24,13 @@ public class HarmonyConverter : BaseConverter
         new HarmonyEntrypoint(),
         
         //common
-        new AssemblyVersionPatch()
+        new ReflectionFlagsPatch(),
+        new AssemblyVersionPatch(),
+        
+        //debug
+    #if DEBUG
+        new ASMDebugPatch()
+    #endif
     };
     public override string Path => "harmony";
 }

@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
+﻿using System.Diagnostics;
 using System.Reflection;
 using AsmResolver;
 using AsmResolver.DotNet;
 using AsmResolver.DotNet.Serialized;
-using Carbon;
 using Carbon.Core;
 using CarbonCompatLoader.Converters;
 using HarmonyLib;
@@ -28,7 +23,11 @@ public static class MainConverter
     public static Assembly CarbonMain;
     
     public static AssemblyReference Newtonsoft = new AssemblyReference("Newtonsoft.Json", new Version(0,0,0,0));
+    
+    public static AssemblyReference protobuf = new AssemblyReference("protobuf-net", new Version(0,0,0,0));
 
+    public static AssemblyReference protobufCore = new AssemblyReference("protobuf-net.Core", new Version(0,0,0,0));
+    
     public static Harmony HarmonyInstance = new Harmony("patrette.CarbonCompatibilityLoader.core");
     
     public static Dictionary<string, BaseConverter> Converters;

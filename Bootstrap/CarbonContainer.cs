@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Reflection;
 using API.Assembly;
 using API.Events;
@@ -67,20 +65,26 @@ public static class CarbonContainer
                 UnityEngine.Debug.LogError(prefix+obj);
             }
         }
-
+        
         void ICarbonAddon.Awake(EventArgs args)
         {
             if (loaded) return;
             loaded = true;
             Bootstrap.logger = new UnityLogger();
+            //string path = Path.Combine(Defines.GetExtensionsFolder(),
+            //    typeof(CarbonEntrypoint).Assembly.GetName().Name + ".dll");
             Community.Runtime.Events.Subscribe(CarbonEvent.StartupSharedComplete, NextFrame);
         }
 
         void NextFrame(EventArgs _)
         {
+            if (loadedNT) return;
+            loadedNT = true;
             string path = FindPath();
             Bootstrap.Run(path, path, out byte[] _, load: true);
         }
+
+        private bool loadedNT;
 
         string FindPath()
         {
@@ -124,3 +128,12 @@ public static class CarbonContainer
         }
     }
 }
+
+/*void ICarbonAddon.Awake(EventArgs args)
+{
+    if (loaded) return;
+    loaded = true;
+    Bootstrap.logger = new UnityLogger();
+    string path = (string)((CarbonEventArgs)args).Payload;
+    Bootstrap.Run(path, path, out byte[] _, load: true);
+}*/

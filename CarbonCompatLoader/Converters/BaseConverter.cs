@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using AsmResolver.DotNet;
+﻿using AsmResolver.DotNet;
 using CarbonCompatLoader.Patches;
 
 namespace CarbonCompatLoader.Converters;

@@ -7,6 +7,7 @@ using AsmResolver.PE.DotNet.Metadata.Tables.Rows;
 using CarbonCompatLoader.Converters;
 using CarbonCompatLoader.Lib;
 using HarmonyLib;
+using Oxide.Plugins;
 
 namespace CarbonCompatLoader.Patches.Oxide;
 
@@ -16,13 +17,20 @@ public class OxideILSwitch : BaseOxidePatch
     private static MethodInfo consoleCommand1 = AccessTools.Method(typeof(OxideCompat), "AddConsoleCommand1");
     private static MethodInfo chatCommand1 = AccessTools.Method(typeof(OxideCompat), "AddChatCommand1");
     private static MethodInfo GetExtensionDirectory = AccessTools.Method(typeof(OxideCompat), nameof(OxideCompat.GetExtensionDirectory));
+    private static MethodInfo TimerOnce = AccessTools.Method(typeof(OxideCompat), nameof(OxideCompat.TimerOnce));
+    private static MethodInfo TimerRepeat = AccessTools.Method(typeof(OxideCompat), nameof(OxideCompat.TimerRepeat));
+    
+    private static MethodInfo RustPluginTimer = AccessTools.Method(typeof(RustPlugin), "get_timer");
+    private static MethodInfo RustPluginTimerDebug = AccessTools.Method(typeof(OxideCompat), nameof(OxideCompat.timer_debug));
     public override void Apply(ModuleDefinition asm, ReferenceImporter importer, BaseConverter.GenInfo info)
     {
         foreach (TypeDefinition td in asm.GetAllTypes())
         {
+            bool classIsRustPlugin = td.IsBaseType(x => x.Name == "RustPlugin" && x.DefinitionAssembly().Name == "Carbon.Common");
             foreach (MethodDefinition method in td.Methods)
             {
-                if (!(method.MethodBody is CilMethodBody body)) continue;
+                bool isRustPluginInstance = !method.IsStatic && classIsRustPlugin;
+                if (method.MethodBody is not CilMethodBody body) continue;
                 for (int index = 0; index < body.Instructions.Count; index++)
                 {
                     CilInstruction CIL = body.Instructions[index];
@@ -39,6 +47,7 @@ public class OxideILSwitch : BaseOxidePatch
                         CIL.Operand = importer.ImportMethod(pluginLoaderMethod);
                         continue;
                     }
+                    
                     // add console command
                     if (CIL.OpCode == CilOpCodes.Callvirt && 
                         CIL.Operand is MemberReference bref && 
@@ -56,6 +65,7 @@ public class OxideILSwitch : BaseOxidePatch
                         CIL.Operand = importer.ImportMethod(consoleCommand1);
                         continue;
                     }
+                    
                     // add chat command
                     if (CIL.OpCode == CilOpCodes.Callvirt && 
                         CIL.Operand is MemberReference cref && 
@@ -98,6 +108,7 @@ public class OxideILSwitch : BaseOxidePatch
                         index+=2;
                         continue;
                     }
+
                     
                     //extension paths
                     if (CIL.OpCode == CilOpCodes.Callvirt && 
@@ -109,6 +120,53 @@ public class OxideILSwitch : BaseOxidePatch
                     {
                         CIL.OpCode = CilOpCodes.Call;
                         CIL.Operand = importer.ImportMethod(GetExtensionDirectory);
+                        continue;
+                    }
+                    
+                    if (CIL.OpCode == CilOpCodes.Callvirt && 
+                        CIL.Operand is MemberReference fref && 
+                        fref.Signature is MethodSignature fsig &&
+                        fref.Parent is TypeReference ftw && 
+                        ftw.FullName == "Oxide.Plugins.Timers" &&
+                        fsig.ParameterTypes[^1].FullName == "Oxide.Core.Plugins.Plugin" &&
+                        ftw.DefinitionAssembly().Name == MainConverter.Common.Name)
+                    {
+                        switch (fref.Name.ToString())
+                        {
+                            case "Once":
+                                CIL.Operand = importer.ImportMethod(TimerOnce);
+                                goto cend;
+                            case "Repeat":
+                                CIL.Operand = importer.ImportMethod(TimerRepeat);
+                                goto cend;
+                            default: 
+                                continue;
+                        }
+                        cend:
+                        CIL.OpCode = CilOpCodes.Call;
+                        continue;
+                    }
+                    
+                    // change GetLibrary<Oxide.Plugins.Timers> to this.timer
+                    if (isRustPluginInstance && CIL.OpCode == CilOpCodes.Callvirt && 
+                        CIL.Operand is MethodSpecification gspec && 
+                        gspec.Method is MemberReference gref &&
+                        gref.Parent is TypeReference gtw &&
+                        gref.Name == "GetLibrary" &&
+                        gtw.FullName == "Oxide.Core.OxideMod" &&
+                        gspec.Signature.TypeArguments.Count == 1 &&
+                        gspec.Signature.TypeArguments[0].FullName == "Oxide.Plugins.Timers" &&
+                        gtw.DefinitionAssembly().Name == MainConverter.Common.Name)
+                    {
+                        CIL.OpCode = CilOpCodes.Pop;
+                        CIL.Operand = null;
+                        body.Instructions.InsertRange(index, new CilInstruction[]
+                        {
+                            new CilInstruction(CilOpCodes.Pop),
+                            new CilInstruction(CilOpCodes.Ldarg_0),
+                            new CilInstruction(CilOpCodes.Call, importer.ImportMethod(RustPluginTimer))
+                        });
+                        //body.Instructions.Insert(index+=3, new CilInstruction(CilOpCodes.Call, importer.ImportMethod(RustPluginTimer)));
                         continue;
                     }
                 }

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using API.Events;
+﻿using API.Events;
 using AsmResolver.DotNet;
 using AsmResolver.DotNet.Code.Cil;
 using AsmResolver.DotNet.Collections;
@@ -25,12 +22,13 @@ public static class CodeGenHelpers
         
         // define on loaded virtual
         MethodDefinition onLoaded = new MethodDefinition("OnLoaded",
-            MethodAttributes.Family |
+            MethodAttributes.CompilerControlled |
             MethodAttributes.Final |
             MethodAttributes.HideBySig |
             MethodAttributes.NewSlot |
             MethodAttributes.Virtual,
             MethodSignature.CreateInstance(asm.CorLibTypeFactory.Void));
+        entrypoint.MethodImplementations.Add(new MethodImplementation((IMethodDefOrRef)importer.ImportMethod(AccessTools.Method(typeof(ICarbonCompatExt), "OnLoaded")), onLoaded));
         entrypoint.Methods.Add(onLoaded);
         asm.TopLevelTypes.Add(entrypoint);
         load = onLoaded;

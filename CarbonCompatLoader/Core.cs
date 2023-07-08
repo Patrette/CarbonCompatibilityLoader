@@ -1,5 +1,4 @@
-﻿using System;
-using API.Assembly;
+﻿using API.Assembly;
 using UnityEngine;
 
 namespace CarbonCompatLoader;

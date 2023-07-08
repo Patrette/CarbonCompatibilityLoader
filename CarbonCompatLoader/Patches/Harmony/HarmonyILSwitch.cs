@@ -1,5 +1,4 @@
-﻿using System;
-using AsmResolver.DotNet;
+﻿using AsmResolver.DotNet;
 using AsmResolver.DotNet.Code.Cil;
 using AsmResolver.PE.DotNet.Cil;
 using CarbonCompatLoader.Converters;

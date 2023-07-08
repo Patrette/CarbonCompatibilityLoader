@@ -8,6 +8,7 @@ using K4os.Compression.LZ4;
 using K4os.Compression.LZ4.Streams;
 using Mono.Cecil;
 using Newtonsoft.Json;
+using ManifestResourceAttributes = Mono.Cecil.ManifestResourceAttributes;
 
 namespace CarbonCompatLoader.Bootstrap;
 
