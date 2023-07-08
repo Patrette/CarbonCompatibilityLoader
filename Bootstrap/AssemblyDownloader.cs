@@ -14,7 +14,7 @@ public static class AssemblyDownloader
     public static bool WriteCache = false;
     public static bool DownloadNuGetPackage(string id, string version, out List<byte[]> data)
     {
-        string path = $"{id}/{version}/{id}.{version}.nupkg";
+        string path = $"{id}.{version}.nupkg".ToLower();
         Stream zipStream;
         if (NuGetCache != null)
         {
@@ -28,15 +28,15 @@ public static class AssemblyDownloader
             }
         }
         Bootstrap.logger.Info($"Downloading {id} ver {version} using NuGet");
-        string url = $"https://api.nuget.org/v3-flatcontainer/{path}";
-        HttpResponseMessage rs = http.GetAsync(url).Result;
+        string url = $"https://globalcdn.nuget.org/packages/{path}";
+		HttpResponseMessage rs = http.GetAsync(url).Result;
         if (rs.StatusCode != HttpStatusCode.OK)
         {
             data = null;
             return false;
         }
 
-        zipStream = rs.Content.ReadAsStreamAsync().Result;
+		zipStream = rs.Content.ReadAsStreamAsync().Result;
         if (WriteCache && NuGetCache != null)
         {
             Bootstrap.logger.Info($"Writing {id} ver {version} to cache");
