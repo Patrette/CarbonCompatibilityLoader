@@ -19,8 +19,7 @@ public class OxideILSwitch : BaseOxidePatch
     private static MethodInfo OnAddedToManagerCompat = AccessTools.Method(typeof(OxideCompat), nameof(OxideCompat.OnAddedToManagerCompat));
     private static MethodInfo OnRemovedFromManagerCompat = AccessTools.Method(typeof(OxideCompat), nameof(OxideCompat.OnRemovedFromManagerCompat));
     
-    private static MethodInfo RustPluginTimer = AccessTools.Method(typeof(RustPlugin), "get_timer");
-    private static MethodInfo RustPluginTimerDebug = AccessTools.Method(typeof(OxideCompat), nameof(OxideCompat.timer_debug));
+    private static FieldInfo RustPluginTimer = AccessTools.Field(typeof(RustPlugin), "timer");
     public override void Apply(ModuleDefinition asm, ReferenceImporter importer, BaseConverter.GenInfo info)
     {
         foreach (TypeDefinition td in asm.GetAllTypes())
@@ -163,7 +162,7 @@ public class OxideILSwitch : BaseOxidePatch
                         {
                             new CilInstruction(CilOpCodes.Pop),
                             new CilInstruction(CilOpCodes.Ldarg_0),
-                            new CilInstruction(CilOpCodes.Call, importer.ImportMethod(RustPluginTimer))
+                            new CilInstruction(CilOpCodes.Ldfld, importer.ImportField(RustPluginTimer))
                         });
                         //body.Instructions.Insert(index+=3, new CilInstruction(CilOpCodes.Call, importer.ImportMethod(RustPluginTimer)));
                         continue;

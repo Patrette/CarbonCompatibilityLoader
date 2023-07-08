@@ -1,4 +1,5 @@
 ﻿using API.Assembly;
+using API.Events;
 using UnityEngine;
 
 namespace CarbonCompatLoader;
@@ -9,9 +10,10 @@ internal class CCLCore : ICarbonExtension
     void ICarbonAddon.Awake(EventArgs args)
     {
         Logger.Info("Initializing");
+        string name = (string)(args is CarbonEventArgs { Payload: string } cargs ? cargs.Payload : null);
         try
         {
-            MainConverter.Initialize();
+            MainConverter.Initialize(name);
         }
         catch (Exception e)
         {

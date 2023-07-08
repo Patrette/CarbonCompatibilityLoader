@@ -41,9 +41,6 @@ public static partial class OxideCompat
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void SetConsoleSystemIndexAll(ConsoleSystem.Command[] value)
     {
-        //#if !DEBUG
-        //throw new NotSupportedException("Not supported in carbon :/");
-        //#endif
         setIndexAll.Invoke(null, new object[] {value} );
     }
 
@@ -76,19 +73,5 @@ public static partial class OxideCompat
     public static Timer TimerRepeat(Oxide.Plugins.Timers instance, float delay, int reps, Action callback, Plugin owner = null)
     {
         return instance.Repeat(delay, reps, callback) ?? throw new NullReferenceException($"Timer-Repeat is null | {instance.IsValid()} {instance.Plugin == null} {instance.Persistence == null}");
-    }
-    
-    public static Timers timer_debug(RustPlugin plugin)
-    {
-        plugin.timer ??= new Timers(plugin);
-        if (plugin.persistence == null)
-        {
-            plugin.persistence = new GameObject("OXScript_" + Guid.NewGuid().ToString("D")).AddComponent<RustPlugin.Persistence>();
-            UnityEngine.Object.DontDestroyOnLoad(plugin.persistence.gameObject);
-        }
-        
-        Logger.Info($"Timer valid: {plugin.timer.IsValid()}");
-
-        return plugin.timer;
     }
 }

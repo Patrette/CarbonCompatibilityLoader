@@ -11,21 +11,21 @@ public abstract class BaseConverter
     public string FullPath = null;
     public class GenInfo
     {
-        public AssemblyReference selfRef;
+        //public AssemblyReference selfRef;
 
         public bool noEntryPoint = false;
 
         public string author = null;
 
-        public GenInfo(AssemblyReference self)
+        public GenInfo()//;AssemblyReference self)
         {
-            selfRef = self;
+            //selfRef = self;
         }
     }
     public byte[] Convert(ModuleDefinition asm, out GenInfo info)
     {
         ReferenceImporter importer = new ReferenceImporter(asm);
-        info = new GenInfo(new AssemblyReference(MainConverter.SelfModule.Assembly).ImportWith(importer));
+        info = new GenInfo();//new AssemblyReference(MainConverter.SelfModule.Assembly).ImportWith(importer));
         foreach (IASMPatch patch in patches)
         {
             patch.Apply(asm, importer, info);

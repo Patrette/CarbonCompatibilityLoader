@@ -5,8 +5,8 @@ namespace CarbonCompatLoader.Patches.Harmony;
 
 public class HarmonyTypeRef : BaseHarmonyPatch
 {
-    public TypeReference harmonyCompatRef = MainConverter.SelfModule.TopLevelTypes.First(x => 
-        x.Namespace == "CarbonCompatLoader.Lib" && x.Name == nameof(HarmonyCompat)).ToTypeReference();
+    //public TypeReference harmonyCompatRef = MainConverter.SelfModule.TopLevelTypes.First(x => 
+    //    x.Namespace == "CarbonCompatLoader.Lib" && x.Name == nameof(HarmonyCompat)).ToTypeReference();
     public override void Apply(ModuleDefinition asm, ReferenceImporter importer, BaseConverter.GenInfo info)
     {
         foreach (TypeReference tw in asm.GetImportedTypeReferences())
@@ -23,7 +23,7 @@ public class HarmonyTypeRef : BaseHarmonyPatch
             if (aref != null && aref.Name == "Rust.Harmony")
             {
                 tw.Namespace = $"CarbonCompatLoader.Lib";
-                tw.Scope = (IResolutionScope)harmonyCompatRef.ImportWith(importer);
+                tw.Scope = (IResolutionScope)importer.ImportType(typeof(HarmonyCompat));
             }
         }
     }

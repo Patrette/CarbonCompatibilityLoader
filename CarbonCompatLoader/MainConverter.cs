@@ -13,7 +13,7 @@ public static class MainConverter
 {
     public static string RootDir = Path.Combine(Defines.GetRootFolder(), "CCL");
 
-    public static ModuleDefinition SelfModule;
+    //public static ModuleDefinition SelfModule;
 
     public static AssemblyReference SDK = new AssemblyReference("Carbon.SDK", new Version(0,0,0,0));
     
@@ -76,11 +76,12 @@ public static class MainConverter
         }
     }
 
-    public static void Initialize()
+    public static void Initialize(string selfName)
     {
         if (Carbonara.CanRun()) Carbonara.Run();
         Converters = new Dictionary<string, BaseConverter>();
-        SelfModule = CCLCore.SelfASMRaw != null ? ModuleDefinition.FromBytes(CCLCore.SelfASMRaw) : ModuleDefinition.FromFile(Path.Combine(Defines.GetExtensionsFolder(), typeof(MainConverter).Assembly.GetName().Name+".dll"));
+        // disabled for now
+        //SelfModule = CCLCore.SelfASMRaw != null ? ModuleDefinition.FromBytes(CCLCore.SelfASMRaw) : ModuleDefinition.FromFile(Path.Combine(Defines.GetExtensionsFolder(), selfName));
         foreach (Assembly asm in AppDomain.CurrentDomain.GetAssemblies())
         {
             if (asm == null) continue;
