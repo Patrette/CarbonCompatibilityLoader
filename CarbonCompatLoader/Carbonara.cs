@@ -43,7 +43,13 @@ public static class Carbonara
             }
             
             //Logger.Info($"Updated: {updated} in {sw.Elapsed.TotalMilliseconds}ms");
-            if (updated) asm.Write(carbonCore);
+            if (updated)
+            {
+            #if DEBUG
+                Logger.Warn("Patched carbonara");
+            #endif
+                asm.Write(carbonCore);
+            }
             //sw.Start();
             //Logger.Info($"Total time: {sw.Elapsed.TotalMilliseconds:n0}ms");
         }

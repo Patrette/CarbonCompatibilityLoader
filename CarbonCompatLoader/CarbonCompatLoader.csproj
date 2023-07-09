@@ -20,6 +20,6 @@
       <Compile Remove="Converters\PluginConverter.cs" />
     </ItemGroup>
     <!--<Target Name="AfterBuild">
-        <Copy SourceFiles="$(SolutionDir)CarbonCompatLoader\bin\$(Configuration)\CarbonCompatibilityLoader.dll" DestinationFolder="C:\rustserver\carbon\extensions" />
+        <Copy SourceFiles="$(SolutionDir)CarbonCompatLoader\bin\$(Configuration)\$(TargetFramework)\CarbonCompatibilityLoader.dll" DestinationFolder="C:\rustserver\carbon\extensions" />
     </Target>-->
 </Project>

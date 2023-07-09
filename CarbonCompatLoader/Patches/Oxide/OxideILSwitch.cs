@@ -89,6 +89,7 @@ public class OxideILSwitch : BaseOxidePatch
                         continue;
                     }
                     
+                    // remove RegisterLibrary calls
                     if (CIL.OpCode == CilOpCodes.Callvirt && 
                         CIL.Operand is MemberReference dref && 
                         dref.Name == "RegisterLibrary" && 
@@ -108,7 +109,7 @@ public class OxideILSwitch : BaseOxidePatch
                     }
 
                     
-                    //extension paths
+                    // extension paths
                     if (CIL.OpCode == CilOpCodes.Callvirt && 
                         CIL.Operand is MemberReference eref && 
                         eref.Name == "get_ExtensionDirectory" && 
@@ -121,6 +122,7 @@ public class OxideILSwitch : BaseOxidePatch
                         continue;
                     }
                     
+                    // timer call fix
                     if (CIL.OpCode == CilOpCodes.Callvirt && 
                         CIL.Operand is MemberReference fref && 
                         fref.Signature is MethodSignature fsig &&
@@ -164,7 +166,6 @@ public class OxideILSwitch : BaseOxidePatch
                             new CilInstruction(CilOpCodes.Ldarg_0),
                             new CilInstruction(CilOpCodes.Ldfld, importer.ImportField(RustPluginTimer))
                         });
-                        //body.Instructions.Insert(index+=3, new CilInstruction(CilOpCodes.Call, importer.ImportMethod(RustPluginTimer)));
                         continue;
                     }
                     

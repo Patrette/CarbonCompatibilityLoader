@@ -18,6 +18,8 @@ internal static class PluginReferenceHandler
         MainConverter.HarmonyInstance.Patch(
             AccessTools.Method(carbonMain.GetType("Carbon.Jobs.ScriptCompilationThread"), "_addReferences"), 
             postfix:new HarmonyMethod(AccessTools.Method(typeof(PluginReferenceHandler), nameof(ResolveCustomReference))));
-        Logger.Warn("Patched carbonara");
+    #if DEBUG
+        Logger.Warn("Patched PluginReferenceHandler");
+    #endif
     }
 }

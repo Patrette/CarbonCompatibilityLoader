@@ -132,7 +132,7 @@ public static class Bootstrap
             module.Resources.Add(new EmbeddedResource(name, ManifestResourceAttributes.Private, ms.ToArray()));
         }
     }
-    public static void Run(string asmReadPath, string asmWritePath, out byte[] asmOut, string branch = "prod", byte[] extData = null, byte[] bootstrapData = null, bool load = false)
+    public static void Run(string asmReadPath, string asmWritePath, out byte[] asmOut, string branch = "latest_build", byte[] extData = null, byte[] bootstrapData = null, bool load = false)
     {
         asmOut = null;
     #if DEBUG

@@ -117,8 +117,8 @@ public static class BootstrapGen
         Bootstrap.downloadInfo.extensionName = extMeta.Name+".dll";
         Bootstrap.downloadInfo.bootstrapName = bootstrapMeta.Name+".dll";
         
-        Bootstrap.downloadInfo.extensionVersion = extMeta.Version.ToString();
-        Bootstrap.downloadInfo.bootstrapVersion = bootstrapMeta.Version.ToString();
+        Bootstrap.downloadInfo.extensionVersion = extMeta.Version.ToString(3);
+        Bootstrap.downloadInfo.bootstrapVersion = bootstrapMeta.Version.ToString(3);
         if (xml != null)
             foreach (DownloadManifest.DLDependency dep in Bootstrap.downloadInfo.dependencies.ToList())
             {
