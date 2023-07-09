@@ -34,7 +34,7 @@ public static class Bootstrap
     static Bootstrap()
     {
         Version = selfAsm.GetName().Version;
-        VersionString = Version.ToString();
+        VersionString = Version.ToString(3);
     }
 
     public const string extensionResourceName = "core.dll";
@@ -147,7 +147,7 @@ public static class Bootstrap
         if (downloadInfo == null)
         {
             logger.Info("Downloading latest version info");
-            if (!AssemblyDownloader.DownloadStringFromGithubRelease(branch, "build.info", out string dlStr))
+            if (!AssemblyDownloader.DownloadStringFromGithubRelease(branch, "info.json", out string dlStr))
             {
                 logger.Error("Failed to download build info");
                 goto end;
@@ -255,9 +255,8 @@ public static class Bootstrap
                     foreach (byte[] data in dep.data)
                     {
                         asmDef.MainModule.AddLZ4Resource(string.Format(dependencyFormatString, index), data);
-                        dep.installed.Add(index);
-
-                        index++;
+                        dep.installed.Clear();
+                        dep.installed.Add(index++);
                     }
                 }
 
@@ -266,6 +265,8 @@ public static class Bootstrap
                 {
                     asmDef.Write(ms);
                     asmOut = ms.ToArray();
+                    asmStream?.Dispose();
+                    asmStream = null;
                     File.WriteAllBytes(asmWritePath, asmOut);
                     
                 }

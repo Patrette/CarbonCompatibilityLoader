@@ -113,9 +113,9 @@ public static class BootstrapGen
         
         AssemblyName extMeta = AssemblyName.GetAssemblyName(ExtPath);
         AssemblyName bootstrapMeta = AssemblyName.GetAssemblyName(inputPath);
-        
+
         Bootstrap.downloadInfo.extensionName = extMeta.Name+".dll";
-        Bootstrap.downloadInfo.bootstrapName = bootstrapMeta.Name+".dll";
+        Bootstrap.downloadInfo.bootstrapName = bootstrapMeta.Name + "_empty.dll";
         
         Bootstrap.downloadInfo.extensionVersion = extMeta.Version.ToString(3);
         Bootstrap.downloadInfo.bootstrapVersion = bootstrapMeta.Version.ToString(3);
@@ -141,9 +141,11 @@ public static class BootstrapGen
 
         File.WriteAllBytes(Path.Combine(buildPath, Bootstrap.downloadInfo.extensionName), extData);
         
+        File.WriteAllBytes(Path.Combine(buildPath, Bootstrap.downloadInfo.bootstrapName), bootstrapData);
+        
         File.WriteAllText(Path.Combine(buildPath, "info.json"), JsonConvert.SerializeObject(Bootstrap.downloadInfo, Formatting.Indented));
         
-        Bootstrap.Run(inputPath, Path.Combine(buildPath, Bootstrap.downloadInfo.bootstrapName), out byte[] asmGenData, bootstrapData: bootstrapData, extData: extData);
+        Bootstrap.Run(inputPath, Path.Combine(buildPath, bootstrapMeta.Name+".dll"), out byte[] asmGenData, bootstrapData: bootstrapData, extData: extData);
 
         foreach (string op in outPaths)
         {

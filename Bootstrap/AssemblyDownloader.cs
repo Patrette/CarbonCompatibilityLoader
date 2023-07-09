@@ -73,6 +73,7 @@ public static class AssemblyDownloader
     public static bool DownloadBytesFromGithubRelease(string branch, string name, out byte[] data)
     {
         string url = string.Format(GithubDownloadUrl, branch, name);
+        //Bootstrap.logger.Info($"gh url: {url}");
         HttpResponseMessage rs = http.GetAsync(url).Result;
         if (rs.StatusCode != HttpStatusCode.OK)
         {
@@ -86,6 +87,7 @@ public static class AssemblyDownloader
     public static bool DownloadStringFromGithubRelease(string branch, string name, out string data)
     {
         string url = string.Format(GithubDownloadUrl, branch, name);
+        //Bootstrap.logger.Info($"gh url: {url}");
         HttpResponseMessage rs = http.GetAsync(url).Result;
         if (rs.StatusCode != HttpStatusCode.OK)
         {
