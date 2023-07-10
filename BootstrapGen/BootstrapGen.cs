@@ -114,6 +114,8 @@ public static class BootstrapGen
         AssemblyName extMeta = AssemblyName.GetAssemblyName(ExtPath);
         AssemblyName bootstrapMeta = AssemblyName.GetAssemblyName(inputPath);
 
+        string bootstrapName = bootstrapMeta.Name + ".dll";
+        
         Bootstrap.downloadInfo.extensionName = extMeta.Name+".dll";
         Bootstrap.downloadInfo.bootstrapName = bootstrapMeta.Name + "_empty.dll";
         
@@ -145,11 +147,15 @@ public static class BootstrapGen
         
         File.WriteAllText(Path.Combine(buildPath, "info.json"), JsonConvert.SerializeObject(Bootstrap.downloadInfo, Formatting.Indented));
         
-        Bootstrap.Run(inputPath, Path.Combine(buildPath, bootstrapMeta.Name+".dll"), out byte[] asmGenData, bootstrapData: bootstrapData, extData: extData);
+        Bootstrap.Run(inputPath, Path.Combine(buildPath, bootstrapName), out byte[] asmGenData, bootstrapData: bootstrapData, extData: extData);
 
         foreach (string op in outPaths)
         {
             File.WriteAllBytes(op, asmGenData);
         }
+        
+    #if RELEASE
+        CFRelease.GenerateCFRelease(Path.Combine(buildPath, "CarbonCompatibilityLoader.zip"), bootstrapName, asmGenData);        
+    #endif
     }
 }

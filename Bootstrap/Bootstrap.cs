@@ -146,7 +146,7 @@ public static class Bootstrap
         byte[] newExtData = null;
         if (downloadInfo == null)
         {
-            logger.Info("Downloading latest version info");
+            logger.Info("Checking for updates");
             if (!AssemblyDownloader.DownloadStringFromGithubRelease(branch, "info.json", out string dlStr))
             {
                 logger.Error("Failed to download build info");
@@ -154,8 +154,12 @@ public static class Bootstrap
             }
             downloadInfo = JsonConvert.DeserializeObject<DownloadManifest>(dlStr);
         }
+
+        Version asmExtVersion = string.IsNullOrWhiteSpace(asmInfo.extensionVersion) ? null : new Version(asmInfo.extensionVersion);
+        Version dlExtVersion = string.IsNullOrWhiteSpace(downloadInfo.extensionVersion) ? null : new Version(downloadInfo.extensionVersion);
+        Version dlBootstrapVersion = string.IsNullOrWhiteSpace(downloadInfo.bootstrapVersion) ? null : new Version(downloadInfo.bootstrapVersion);
         
-        if (downloadInfo.extensionVersion != asmInfo.extensionVersion && extData == null)
+        if (extData == null && dlExtVersion > asmExtVersion)
         {
             logger.Info($"Downloading extension version {downloadInfo.extensionVersion} > {asmInfo.extensionVersion}");
             if (!AssemblyDownloader.DownloadBytesFromGithubRelease(branch, downloadInfo.extensionName, out newExtData))
@@ -175,7 +179,7 @@ public static class Bootstrap
             }
         }
         
-        if (downloadInfo.bootstrapVersion != VersionString && bootstrapData == null)
+        if (bootstrapData == null && dlBootstrapVersion > Version)
         {
             logger.Info($"Downloading bootstrap version {downloadInfo.bootstrapVersion} > {VersionString}");
             if (!AssemblyDownloader.DownloadBytesFromGithubRelease(branch, downloadInfo.bootstrapName, out bootstrapData))
@@ -290,7 +294,7 @@ public static class Bootstrap
 
         if (updateFail)
         {
-            logger.Warn($"Failed to update, falling back to version {asmInfo.extensionVersion}");
+            logger.Warn($"Failed to update, falling back to version {asmInfo.extensionVersion} | {VersionString}");
         }
 
         if (!load)

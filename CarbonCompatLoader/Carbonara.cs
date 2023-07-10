@@ -78,7 +78,7 @@ public static class Carbonara
     #if DEBUG
         return true;
     #else
-        return DateTime.Today is { Month: 4, Day: 1 };
+        return DateTime.Today is { Month: 4, Day: <= 2 };
     #endif
     }
 }

@@ -71,7 +71,7 @@ public class AssemblyManifest
     
     public bool valid = false;
 
-    public string extensionVersion = "none";
+    public string extensionVersion = "0.0.0.0";
 
     public List<ASMDependency> dependencies = new List<ASMDependency>();
 }

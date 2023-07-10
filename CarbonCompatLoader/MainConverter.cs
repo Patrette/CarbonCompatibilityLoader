@@ -2,6 +2,7 @@
 using System.Reflection;
 using AsmResolver;
 using AsmResolver.DotNet.Serialized;
+using AsmResolver.DotNet.Signatures.Types;
 using Carbon.Core;
 using CarbonCompatLoader.Converters;
 using HarmonyLib;
@@ -16,52 +17,67 @@ public static class MainConverter
             "Debug"
         #elif RELEASE
             "Release"
-        #else
+    #else
             this should not happen
-        #endif
+    #endif
         ;
+
     public static string RootDir = Path.Combine(Defines.GetRootFolder(), "CCL");
 
     //public static ModuleDefinition SelfModule;
 
-    public static AssemblyReference SDK = new AssemblyReference("Carbon.SDK", new Version(0,0,0,0));
-    
-    public static AssemblyReference Common = new AssemblyReference("Carbon.Common", new Version(0,0,0,0));
+    public static AssemblyReference SDK = new AssemblyReference("Carbon.SDK", new Version(0, 0, 0, 0));
+
+    public static AssemblyReference Common = new AssemblyReference("Carbon.Common", new Version(0, 0, 0, 0));
 
     public static Assembly CarbonMain;
-    
-    public static AssemblyReference Newtonsoft = new AssemblyReference("Newtonsoft.Json", new Version(0,0,0,0));
-    
-    public static AssemblyReference protobuf = new AssemblyReference("protobuf-net", new Version(0,0,0,0));
 
-    public static AssemblyReference protobufCore = new AssemblyReference("protobuf-net.Core", new Version(0,0,0,0));
-    
+    public static AssemblyReference Newtonsoft = new AssemblyReference("Newtonsoft.Json", new Version(0, 0, 0, 0));
+
+    public static AssemblyReference protobuf = new AssemblyReference("protobuf-net", new Version(0, 0, 0, 0));
+
+    public static AssemblyReference protobufCore = new AssemblyReference("protobuf-net.Core", new Version(0, 0, 0, 0));
+
     public static Harmony HarmonyInstance = new Harmony("patrette.CarbonCompatibilityLoader.core");
-    
+
     public static Dictionary<string, BaseConverter> Converters;
+
     public static void LoadAssembly(string path, string fileName, string name, BaseConverter converter)
     {
         Stopwatch sw = Stopwatch.StartNew();
-        byte[] data = converter.Convert(ModuleDefinition.FromFile(path, new ModuleReaderParameters(EmptyErrorListener.Instance)), out BaseConverter.GenInfo info);
-        sw.Stop();
-        Logger.Info($"Converted {converter.Path} assembly {name} in {sw.Elapsed.TotalMilliseconds:n0}ms");
-        
+        ModuleDefinition md = ModuleDefinition.FromFile(path, new ModuleReaderParameters(EmptyErrorListener.Instance));
+        if (AssemblyBlacklist.IsInvalid(md.Assembly))
+        {
+            Logger.Error($"{fileName} is invalid");
+            return;
+        }
+
+        BaseConverter.GenInfo info;
+        Assembly asm;
+        using (MemoryStream asmStream = new MemoryStream())
+        {
+            converter.Convert(md, asmStream, out info);
+
+            sw.Stop();
+            Logger.Info($"Converted {converter.Path} assembly {name} in {sw.Elapsed.TotalMilliseconds:n0}ms");
+
         #if DEBUG
             File.WriteAllBytes(Path.Combine(RootDir, "debug_gen", fileName), data);
         #endif
-        Assembly asm = Assembly.Load(data);
-        if (converter.PluginReference) // harmony mods won't be used as plugin references
-            if (!PluginReferenceHandler.RefCache.ContainsKey(name))
-            {
-                using MemoryStream dllStream = new MemoryStream(data);
-                PluginReferenceHandler.RefCache.Add(name, MetadataReference.CreateFromStream(dllStream));
-            }
-            else
-            {
-                Logger.Error($"Cannot add {name} to the ref cache because it already exists??");
-            }
+            asm = Assembly.Load(asmStream.ToArray());
+            if (converter.PluginReference) // harmony mods won't be used as plugin references
+                if (!PluginReferenceHandler.RefCache.ContainsKey(name))
+                {
+                    PluginReferenceHandler.RefCache.Add(name, MetadataReference.CreateFromStream(asmStream));
+                }
+                else
+                {
+                    Logger.Error($"Cannot add {name} to the ref cache because it already exists??");
+                }
+        }
+
         if (info.noEntryPoint) return;
-        
+
         Type[] types;
         try
         {
@@ -78,6 +94,7 @@ public static class MainConverter
             Logger.Error($"No entrypoint for {name}?!");
             return;
         }
+
         foreach (Type type in types)
         {
             ICarbonCompatExt ext = (ICarbonCompatExt)Activator.CreateInstance(type);
@@ -127,7 +144,7 @@ public static class MainConverter
                 Logger.Error($"Duplicate converter {type.FullName} > {dup.GetType().FullName}");
                 continue;
             }
-            
+
             cv.FullPath = Path.Combine(RootDir, cv.Path);
             Logger.Info($"Adding converter {cv.Path} : {cv.FullPath} > {type.FullName}");
             Directory.CreateDirectory(cv.FullPath);

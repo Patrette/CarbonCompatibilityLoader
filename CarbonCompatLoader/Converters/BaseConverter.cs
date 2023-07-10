@@ -22,7 +22,7 @@ public abstract class BaseConverter
             //selfRef = self;
         }
     }
-    public byte[] Convert(ModuleDefinition asm, out GenInfo info)
+    public void Convert(ModuleDefinition asm, MemoryStream ms, out GenInfo info)
     {
         ReferenceImporter importer = new ReferenceImporter(asm);
         info = new GenInfo();//new AssemblyReference(MainConverter.SelfModule.Assembly).ImportWith(importer));
@@ -30,11 +30,6 @@ public abstract class BaseConverter
         {
             patch.Apply(asm, importer, info);
         }
-
-        using (MemoryStream ms = new MemoryStream())
-        {
-            asm.Write(ms);
-            return ms.ToArray();
-        }
+        asm.Write(ms);
     }
 }
