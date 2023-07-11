@@ -52,29 +52,24 @@ public static class MainConverter
             return;
         }
 
-        BaseConverter.GenInfo info;
-        Assembly asm;
-        using (MemoryStream asmStream = new MemoryStream())
-        {
-            converter.Convert(md, asmStream, out info);
+        byte[] data = converter.Convert(md, out BaseConverter.GenInfo info);
+        sw.Stop();
+        Logger.Info($"Converted {converter.Path} assembly {name} in {sw.Elapsed.TotalMilliseconds:n0}ms");
 
-            sw.Stop();
-            Logger.Info($"Converted {converter.Path} assembly {name} in {sw.Elapsed.TotalMilliseconds:n0}ms");
-
-        #if DEBUG
+    #if DEBUG
             File.WriteAllBytes(Path.Combine(RootDir, "debug_gen", fileName), data);
-        #endif
-            asm = Assembly.Load(asmStream.ToArray());
-            if (converter.PluginReference) // harmony mods won't be used as plugin references
-                if (!PluginReferenceHandler.RefCache.ContainsKey(name))
-                {
+    #endif
+        Assembly asm = Assembly.Load(data);
+        if (converter.PluginReference) // harmony mods won't be used as plugin references
+            if (!PluginReferenceHandler.RefCache.ContainsKey(name))
+            {
+                using (MemoryStream asmStream = new MemoryStream(data))
                     PluginReferenceHandler.RefCache.Add(name, MetadataReference.CreateFromStream(asmStream));
-                }
-                else
-                {
-                    Logger.Error($"Cannot add {name} to the ref cache because it already exists??");
-                }
-        }
+            }
+            else
+            {
+                Logger.Error($"Cannot add {name} to the ref cache because it already exists??");
+            }
 
         if (info.noEntryPoint) return;
 
