@@ -6,6 +6,13 @@ namespace CarbonCompatLoader;
 public class CCLConfig
 {
     public static CCLConfig self;
+
+    public BootstrapConfig bootstrap = new();
+    
+    public class BootstrapConfig
+    {
+        public bool AutoUpdates = true;
+    }
     // disabled for now
     /*public PluginConverterCFG PluginConverter = new PluginConverterCFG();
 

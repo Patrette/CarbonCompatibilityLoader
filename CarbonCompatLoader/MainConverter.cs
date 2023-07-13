@@ -1,8 +1,9 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
+using API.Events;
 using AsmResolver;
 using AsmResolver.DotNet.Serialized;
-using AsmResolver.DotNet.Signatures.Types;
+using Carbon;
 using Carbon.Core;
 using CarbonCompatLoader.Converters;
 using HarmonyLib;

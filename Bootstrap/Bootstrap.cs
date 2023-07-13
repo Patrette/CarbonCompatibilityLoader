@@ -4,6 +4,7 @@ using K4os.Compression.LZ4;
 using K4os.Compression.LZ4.Streams;
 using Mono.Cecil;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using ManifestResourceAttributes = Mono.Cecil.ManifestResourceAttributes;
 
 namespace CarbonCompatLoader.Bootstrap;
@@ -132,6 +133,7 @@ public static class Bootstrap
             module.Resources.Add(new EmbeddedResource(name, ManifestResourceAttributes.Private, ms.ToArray()));
         }
     }
+    
     public static void Run(string asmReadPath, string asmWritePath, out byte[] asmOut, string branch = "latest_build", byte[] extData = null, byte[] bootstrapData = null, bool load = false)
     {
         asmOut = null;
@@ -139,13 +141,24 @@ public static class Bootstrap
         logger.Info($"Input: {asmReadPath}");
         logger.Info($"Output: {asmWritePath}");
     #endif
-        logger.Info($"Initializing Bootstrap-{VersionString}-{BuildConfiguration}");
+        logger.Info($"Initializing Bootstrap-{BuildConfiguration}-{VersionString}");
         asmInfo = TryGetResourceString(infoResourceName, selfAsm, out string infoStr) ? JsonConvert.DeserializeObject<AssemblyManifest>(infoStr) : new AssemblyManifest();
         bool needsRepack = false;
         bool updateFail = true;
         byte[] newExtData = null;
+        JObject cfg = null;
+        bool canUpdate = true;
+        bool enabled = true;
+        if (load)
+            CarbonContainer.LoadConfig(out cfg, out canUpdate, out enabled);
+        
         if (downloadInfo == null)
         {
+            if (!canUpdate || !enabled)
+            {
+                updateFail = false;
+                goto end;
+            }
             logger.Info("Checking for updates");
             if (!AssemblyDownloader.DownloadStringFromGithubRelease(branch, "info.json", out string dlStr))
             {
@@ -308,6 +321,6 @@ public static class Bootstrap
         {
             raw_deps.AddRange(dep.data);
         }
-        CarbonContainer.Load(extData, raw_deps, asmInfo.extensionVersion);
+        CarbonContainer.Load(extData, raw_deps, asmInfo.extensionVersion, cfg, enabled);
     }
 }

@@ -9,9 +9,9 @@ namespace CarbonCompatLoader.Patches.Oxide;
 
 public class OxideILSwitch : BaseOxidePatch
 {
-    private static MethodInfo pluginLoaderMethod = AccessTools.Method(typeof(OxideCompat), "RegisterPluginLoader");
-    private static MethodInfo consoleCommand1 = AccessTools.Method(typeof(OxideCompat), "AddConsoleCommand1");
-    private static MethodInfo chatCommand1 = AccessTools.Method(typeof(OxideCompat), "AddChatCommand1");
+    private static MethodInfo pluginLoaderMethod = AccessTools.Method(typeof(OxideCompat), nameof(OxideCompat.RegisterPluginLoader));
+    private static MethodInfo consoleCommand1 = AccessTools.Method(typeof(OxideCompat), nameof(OxideCompat.AddConsoleCommand1));
+    private static MethodInfo chatCommand1 = AccessTools.Method(typeof(OxideCompat), nameof(OxideCompat.AddChatCommand1));
     private static MethodInfo GetExtensionDirectory = AccessTools.Method(typeof(OxideCompat), nameof(OxideCompat.GetExtensionDirectory));
     private static MethodInfo TimerOnce = AccessTools.Method(typeof(OxideCompat), nameof(OxideCompat.TimerOnce));
     private static MethodInfo TimerRepeat = AccessTools.Method(typeof(OxideCompat), nameof(OxideCompat.TimerRepeat));
@@ -25,6 +25,7 @@ public class OxideILSwitch : BaseOxidePatch
         foreach (TypeDefinition td in asm.GetAllTypes())
         {
             bool classIsRustPlugin = td.IsBaseType(x => x.Name == "RustPlugin" && x.DefinitionAssembly().Name == "Carbon.Common");
+            bool classOxideExtension = td.IsBaseType(x => x.FullName == "Oxide.Core.Extensions.Extension" && x.DefinitionAssembly().Name == "Carbon.Common");
             foreach (MethodDefinition method in td.Methods)
             {
                 bool isRustPluginInstance = !method.IsStatic && classIsRustPlugin;
@@ -43,6 +44,7 @@ public class OxideILSwitch : BaseOxidePatch
                     {
                         CIL.OpCode = CilOpCodes.Call;
                         CIL.Operand = importer.ImportMethod(pluginLoaderMethod);
+                        body.Instructions.Insert(index++, new CilInstruction(!method.IsStatic && classOxideExtension ? CilOpCodes.Ldarg_0 : CilOpCodes.Ldnull));
                         continue;
                     }
                     

@@ -7,7 +7,6 @@ using JetBrains.Annotations;
 using Oxide.Core.Extensions;
 using Oxide.Core.Plugins;
 using Oxide.Plugins;
-using UnityEngine;
 using Timer = Oxide.Plugins.Timer;
 
 namespace CarbonCompatLoader.Lib;
@@ -15,7 +14,7 @@ namespace CarbonCompatLoader.Lib;
 [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
 public static partial class OxideCompat
 {
-    public static void RegisterPluginLoader(ExtensionManager self, PluginLoader loader)
+    public static void RegisterPluginLoader(ExtensionManager self, PluginLoader loader, Extension oxideExt)
     {
         self.RegisterPluginLoader(loader);
         string asmName = Assembly.GetCallingAssembly().GetName().Name;
@@ -26,7 +25,15 @@ public static partial class OxideCompat
             //Logger.Info($"  Loading oxide plugin: {type.Name}");
             try
             {
-                ModLoader.InitializePlugin(type, out RustPlugin plugin, Community.Runtime.Plugins, precompiled:true);
+                ModLoader.InitializePlugin(type, out RustPlugin plugin, Community.Runtime.Plugins, precompiled:true, preInit:
+                    rustPlugin =>
+                    {
+                        if (oxideExt == null) return;
+                        
+                        rustPlugin.Version = oxideExt.Version;
+                        if (rustPlugin.Author == "CCL" && !string.IsNullOrWhiteSpace(oxideExt.Author))
+                            rustPlugin.Author = oxideExt.Author;
+                    });
                 plugin.IsExtension = true;
             }
             catch (Exception e)
