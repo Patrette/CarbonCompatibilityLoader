@@ -9,6 +9,8 @@ public class CCLInterface : CarbonModule<CCLConfig, EmptyModuleData>
     public static CCLInterface Singleton { get; private set; }
     public override Type Type => typeof(CCLInterface);
 
+    public override bool EnabledByDefault => true;
+
     public CCLInterface()
     {
         Singleton = this;
