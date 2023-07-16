@@ -65,6 +65,12 @@ public static partial class OxideCompat
     }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T OxideCallHookGeneric<T>(string hook, params object[] args)
+    {
+        return (T)Oxide.Core.Interface.Call<T>(hook, args);
+    }
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static string GetExtensionDirectory(Oxide.Core.OxideMod _)
     {
         return Path.Combine(MainConverter.RootDir, MainConverter.Converters["oxide"].Path);
@@ -73,12 +79,12 @@ public static partial class OxideCompat
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Timer TimerOnce(Oxide.Plugins.Timers instance, float delay, Action callback, Plugin owner = null)
     {
-        return instance.Once(delay, callback) ?? throw new NullReferenceException($"Timer-Once is null {instance.Plugin.Name}:{instance.Plugin.GetType().FullName}:{instance.Plugin.GetType().BaseType.FullName} | {instance.IsValid()} {(instance.Plugin == null ? "True" : $"False, {instance.Plugin.IsPrecompiled}:{Community.IsServerFullyInitialized}")} {instance.Persistence == null}");
+        return instance.Once(delay, callback);// ?? throw new NullReferenceException($"Timer-Once is null {instance.Plugin.Name}:{instance.Plugin.GetType().FullName}:{instance.Plugin.GetType().BaseType.FullName} | {instance.IsValid()} {(instance.Plugin == null ? "True" : $"False, {instance.Plugin.IsPrecompiled}:{Community.IsServerFullyInitialized}")} {instance.Persistence == null}");
     }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Timer TimerRepeat(Oxide.Plugins.Timers instance, float delay, int reps, Action callback, Plugin owner = null)
     {
-        return instance.Repeat(delay, reps, callback) ?? throw new NullReferenceException($"Timer-Repeat is null | {instance.IsValid()} {instance.Plugin == null} {instance.Persistence == null}");
+        return instance.Repeat(delay, reps, callback);// ?? throw new NullReferenceException($"Timer-Repeat is null | {instance.IsValid()} {instance.Plugin == null} {instance.Persistence == null}");
     }
 }

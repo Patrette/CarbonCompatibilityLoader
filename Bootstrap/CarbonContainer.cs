@@ -64,6 +64,7 @@ public static class CarbonContainer
         
         foreach (Type type in types)
         {
+            if (type == null) continue;
             if (type.IsAbstract || !typeof(ICarbonExtension).IsAssignableFrom(type)) continue;
             ICarbonExtension ext = (ICarbonExtension)Activator.CreateInstance(type);
             //type.GetField("SelfASMRaw", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, core_raw);

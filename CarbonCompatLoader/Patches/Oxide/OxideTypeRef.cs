@@ -12,6 +12,7 @@ public class OxideTypeRef : BaseOxidePatch
         "System.Void Oxide.Core.Libraries.Permission::RegisterPermission(System.String, Oxide.Core.Plugins.Plugin)",
         "System.Void Oxide.Core.Libraries.Lang::RegisterMessages(System.Collections.Generic.Dictionary`2<System.String, System.String>, Oxide.Core.Plugins.Plugin, System.String)",
         "System.String Oxide.Core.Libraries.Lang::GetMessage(System.String, Oxide.Core.Plugins.Plugin, System.String)",
+        "System.Void Oxide.Game.Rust.Libraries.Command::RemoveConsoleCommand(System.String, Oxide.Core.Plugins.Plugin)",
     };
 
     public static bool IsOxideASM(AssemblyReference aref)
@@ -28,6 +29,7 @@ public class OxideTypeRef : BaseOxidePatch
             {
                 if (IsOxideASM(aref))
                 {
+                    string fullName = mref.FullName;
                     if (PluginToBaseHookable.Contains(mref.FullName))
                     {
                         for (int index = 0; index < methodSig.ParameterTypes.Count; index++)
@@ -39,11 +41,14 @@ public class OxideTypeRef : BaseOxidePatch
                                 methodSig.ParameterTypes[index] = importer.ImportTypeSignature(typeof(BaseHookable));
                             }
                         }
+                        continue;
                     }
-                    /*else
+                    
+                    if (methodSig.GenericParameterCount == 1 && fullName == "!!0 Oxide.Core.Interface::Call<?>(System.String, System.Object[])")
                     {
-                        Logger.Info($"call: {mref.FullName}");
-                    }*/
+                        mref.Parent = importer.ImportType(typeof(OxideCompat));
+                        mref.Name = nameof(OxideCompat.OxideCallHookGeneric);
+                    }
                     continue;
                 }
 

@@ -1,9 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
-using API.Events;
 using AsmResolver;
 using AsmResolver.DotNet.Serialized;
-using Carbon;
 using Carbon.Core;
 using CarbonCompatLoader.Converters;
 using HarmonyLib;
@@ -54,18 +52,32 @@ public static class MainConverter
         }
 
         byte[] data = converter.Convert(md, out BaseConverter.GenInfo info);
+        if (CCLEntrypoint.InitialConfig?.Development?.ReferenceAssemblies != null &&
+            CCLEntrypoint.InitialConfig.Development.DevMode &&
+            CCLEntrypoint.InitialConfig.Development.ReferenceAssemblies.Contains(md.Assembly?.Name))
+        {
+            Logger.Info($"Generating reference assembly for {name}");
+            try
+            {
+                File.WriteAllBytes(Path.Combine(RootDir, "ReferenceAssemblies", fileName), ReferenceAssemblyGenerator.ConvertToReferenceAssembly(data));
+            }
+            catch (Exception e)
+            {
+                Logger.Error($"Failed to generate reference assembly for {name}: \n{e}");
+            }
+        }
         sw.Stop();
         Logger.Info($"Converted {converter.Path} assembly {name} in {sw.Elapsed.TotalMilliseconds:n0}ms");
 
     #if DEBUG
-            File.WriteAllBytes(Path.Combine(RootDir, "debug_gen", fileName), data);
+        File.WriteAllBytes(Path.Combine(RootDir, "debug_gen", fileName), data);
     #endif
         Assembly asm = Assembly.Load(data);
         if (converter.PluginReference) // harmony mods won't be used as plugin references
             if (!PluginReferenceHandler.RefCache.ContainsKey(name))
             {
-                using (MemoryStream asmStream = new MemoryStream(data))
-                    PluginReferenceHandler.RefCache.Add(name, MetadataReference.CreateFromStream(asmStream));
+                using MemoryStream asmStream = new MemoryStream(data);
+                PluginReferenceHandler.RefCache.Add(name, MetadataReference.CreateFromStream(asmStream));
             }
             else
             {
@@ -74,15 +86,7 @@ public static class MainConverter
 
         if (info.noEntryPoint) return;
 
-        Type[] types;
-        try
-        {
-            types = asm.GetTypes();
-        }
-        catch (ReflectionTypeLoadException e)
-        {
-            types = e.Types;
-        }
+        Type[] types = GetTypesWithoutError(asm);
 
         types = types.Where(x => typeof(ICarbonCompatExt).IsAssignableFrom(x) && !x.IsAbstract).ToArray();
         if (types.Length == 0)
@@ -95,6 +99,18 @@ public static class MainConverter
         {
             ICarbonCompatExt ext = (ICarbonCompatExt)Activator.CreateInstance(type);
             ext.OnLoaded();
+        }
+    }
+
+    public static Type[] GetTypesWithoutError(Assembly asm)
+    {
+        try
+        {
+            return asm.GetTypes();
+        }
+        catch (ReflectionTypeLoadException e)
+        {
+            return e.Types;
         }
     }
 
@@ -131,8 +147,11 @@ public static class MainConverter
     #if DEBUG
         Directory.CreateDirectory(Path.Combine(RootDir, "debug_gen"));
     #endif
-        foreach (Type type in Assembly.GetExecutingAssembly().GetTypes()
-                     .Where(x => typeof(BaseConverter).IsAssignableFrom(x) && !x.IsAbstract))
+        if (CCLEntrypoint.InitialConfig?.Development?.ReferenceAssemblies != null && CCLEntrypoint.InitialConfig.Development.DevMode && CCLEntrypoint.InitialConfig.Development.ReferenceAssemblies.Count > 0)
+        {
+            Directory.CreateDirectory(Path.Combine(RootDir, "ReferenceAssemblies"));
+        }
+        foreach (Type type in GetTypesWithoutError(Assembly.GetExecutingAssembly()).Where(x => typeof(BaseConverter).IsAssignableFrom(x) && !x.IsAbstract))
         {
             BaseConverter cv = (BaseConverter)Activator.CreateInstance(type);
             if (Converters.TryGetValue(cv.Path, out BaseConverter dup))
@@ -165,7 +184,7 @@ public static class MainConverter
                 }
                 catch (Exception e)
                 {
-                    Logger.Error($"Failed to load {asmName} using {cv.Path}: {e}");
+                    Logger.Error($"Failed to load {asmName} using {cv.Path}: \n{e}");
                 }
             }
         }

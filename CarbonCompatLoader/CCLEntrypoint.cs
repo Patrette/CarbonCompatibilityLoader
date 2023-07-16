@@ -25,6 +25,8 @@ internal class CCLEntrypoint : ICarbonExtension
                 cfg = JObject.Parse(File.ReadAllText(cfgPath));
             }
 
+            InitialConfig = cfg["Config"]?.ToObject<CCLConfig>();
+
             JToken tk = cfg?["Enabled"];
             
             JToken at = cfg?["Config"]?["bootstrap"]?["AutoUpdates"];
@@ -49,14 +51,16 @@ internal class CCLEntrypoint : ICarbonExtension
     //[UsedImplicitly]
     //internal static byte[] SelfASMRaw = null;
     [UsedImplicitly]
-    internal static JObject cfg;
+    private static JObject cfg;
     [UsedImplicitly]
     internal static bool bootstrapUsed;
     internal static readonly Version CCLVersion = typeof(MainConverter).Assembly.GetName().Version;
     internal static bool enabled;
+    internal static CCLConfig InitialConfig;
     void ICarbonAddon.Awake(EventArgs args)
     {
         LoadConfig(out bool autoUpdates, out enabled);
+        cfg = null;
         Community.Runtime.Events.Subscribe(CarbonEvent.HooksInstalled, _ => CCLInterface.AttemptModuleInit());
         Logger.Info($"Initializing CCL-{MainConverter.BuildConfiguration}-{CCLVersion.ToString(3)}");
         if (!enabled)

@@ -8,10 +8,24 @@ public class CCLConfig
     public static CCLConfig self;
 
     public BootstrapConfig bootstrap = new();
+
+    public DevConfig Development = new();
     
     public class BootstrapConfig
     {
-        public bool AutoUpdates = true;
+        public bool AutoUpdates = 
+            #if DEBUG
+                false
+            #else
+                true
+            #endif
+                ;
+    }
+
+    public class DevConfig
+    {
+        public bool DevMode = false;
+        public List<string> ReferenceAssemblies = new();
     }
     // disabled for now
     /*public PluginConverterCFG PluginConverter = new PluginConverterCFG();
