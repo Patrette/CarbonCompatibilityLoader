@@ -2,7 +2,6 @@
 using System.Runtime.CompilerServices;
 using Carbon;
 using Carbon.Core;
-using HarmonyLib;
 using JetBrains.Annotations;
 using Oxide.Core.Extensions;
 using Oxide.Core.Plugins;
@@ -25,11 +24,9 @@ public static partial class OxideCompat
             //Logger.Info($"  Loading oxide plugin: {type.Name}");
             try
             {
-                ModLoader.InitializePlugin(type, out RustPlugin plugin, Community.Runtime.Plugins, precompiled:true, preInit:
+                ModLoader.InitializePlugin(type, out RustPlugin plugin, Community.Runtime.Plugins, precompiled:true, preInit: oxideExt == null ? null : 
                     rustPlugin =>
                     {
-                        if (oxideExt == null) return;
-                        
                         rustPlugin.Version = oxideExt.Version;
                         if (rustPlugin.Author == "CCL" && !string.IsNullOrWhiteSpace(oxideExt.Author))
                             rustPlugin.Author = oxideExt.Author;
@@ -42,15 +39,6 @@ public static partial class OxideCompat
             }
         }
     }
-    
-    internal static MethodInfo setIndexAll = AccessTools.Method(typeof(ConsoleSystem.Index), "set_All", new[] {typeof(ConsoleSystem.Command[])});
-    
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void SetConsoleSystemIndexAll(ConsoleSystem.Command[] value)
-    {
-        setIndexAll.Invoke(null, new object[] {value} );
-    }
-
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void AddConsoleCommand1(Oxide.Game.Rust.Libraries.Command Lib, string name, Oxide.Core.Plugins.Plugin plugin, Func<ConsoleSystem.Arg, bool> callback)

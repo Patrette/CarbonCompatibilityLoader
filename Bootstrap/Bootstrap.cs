@@ -25,9 +25,9 @@ public static class Bootstrap
             "Debug"
         #elif RELEASE
             "Release"
-    #else
+        #else
             this should not happen
-    #endif
+        #endif
         ;
     public static Assembly selfAsm = Assembly.GetExecutingAssembly();
     public readonly static Version Version = null;

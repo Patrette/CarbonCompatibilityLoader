@@ -43,7 +43,6 @@ public class CCLInterface : CarbonModule<CCLConfig, EmptyModuleData>
 
     [AuthLevel(1)]
     [ConsoleCommand("ccl.info")]
-    [UsedImplicitly]
     private bool Info(ConsoleSystem.Arg arg)
     {
         arg.ReplyWith($"CCL - {MainConverter.BuildConfiguration} - {CCLEntrypoint.CCLVersion.ToString(3)} - {(CCLEntrypoint.bootstrapUsed ? "With bootstrap" : "Without bootstrap")}");

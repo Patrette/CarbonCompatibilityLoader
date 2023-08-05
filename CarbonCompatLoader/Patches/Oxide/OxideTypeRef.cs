@@ -49,13 +49,6 @@ public class OxideTypeRef : BaseOxidePatch
                         mref.Parent = importer.ImportType(typeof(OxideCompat));
                         mref.Name = nameof(OxideCompat.OxideCallHookGeneric);
                     }
-                    continue;
-                }
-
-                if (aref.Name == "Facepunch.Console" && mref.FullName == "System.Void ConsoleSystem+Index::set_All(ConsoleSystem+Command[])")
-                {
-                    mref.Name = nameof(OxideCompat.SetConsoleSystemIndexAll);
-                    mref.Parent = importer.ImportType(typeof(OxideCompat));
                 }
             }
         }

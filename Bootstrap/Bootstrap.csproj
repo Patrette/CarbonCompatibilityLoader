@@ -9,6 +9,7 @@
         <AssemblyName>CCLBootstrap</AssemblyName>
         <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
         <NoStdLib>true</NoStdLib>
+        <Deterministic>true</Deterministic>
     </PropertyGroup>
     <ItemGroup>
         <Reference Remove="$(CarbonManagedLibPath)/0Harmony.dll" />
