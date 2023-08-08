@@ -3,6 +3,7 @@ using AsmResolver.PE.DotNet.Metadata.Tables.Rows;
 using CarbonCompatLoader.Converters;
 using CarbonCompatLoader.Lib;
 using HarmonyLib;
+using Oxide.Core.Libraries;
 using Oxide.Plugins;
 
 namespace CarbonCompatLoader.Patches.Oxide;
@@ -20,6 +21,15 @@ public class OxideILSwitch : BaseOxidePatch
     private static MethodInfo OnRemovedFromManagerCompat = AccessTools.Method(typeof(OxideCompat), nameof(OxideCompat.OnRemovedFromManagerCompat));
     
     private static FieldInfo RustPluginTimer = AccessTools.Field(typeof(RustPlugin), "timer");
+
+    private static readonly MethodInfo carbonLangGetMessage;
+    private static int carbonLangGetMessageArgLength;
+
+    static OxideILSwitch()
+    {
+        carbonLangGetMessage = typeof(Lang).GetMethods().First(x => x.Name == "GetMessage" && x.ReturnType == typeof(string));
+        carbonLangGetMessageArgLength = carbonLangGetMessage.GetParameters().Length;
+    }
     public override void Apply(ModuleDefinition asm, ReferenceImporter importer, BaseConverter.GenInfo info)
     {
         foreach (TypeDefinition td in asm.GetAllTypes())
@@ -194,6 +204,28 @@ public class OxideILSwitch : BaseOxidePatch
                         cend:
                         CIL.OpCode = CilOpCodes.Call;
                         continue;
+                    }
+                    
+                    // lang.GetMessage fix #blame raul https://github.com/CarbonCommunity/Carbon.Core/commit/ef572b68b989df687c3d764e31968ca3b239ab9e
+                    if (CIL.OpCode == CilOpCodes.Callvirt && 
+                        CIL.Operand is MemberReference iref && 
+                        iref.Signature is MethodSignature isig &&
+                        iref.Parent is TypeReference itw && 
+                        itw.FullName == "Oxide.Core.Libraries.Lang" &&
+                        iref.Name == "GetMessage" &&
+                        carbonLangGetMessageArgLength != 3 &&
+                        isig.ParameterTypes.Count == 3 &&
+                        isig.ParameterTypes[0].ElementType == ElementType.String &&
+                        isig.ParameterTypes[1].FullName == "Carbon.Base.BaseHookable" &&
+                        isig.ParameterTypes[2].ElementType == ElementType.String &&
+                        itw.DefinitionAssembly().Name == MainConverter.Common.Name)
+                    {
+                        CIL.Operand = importer.ImportMethod(carbonLangGetMessage);
+                        for (int idx = 0; idx < carbonLangGetMessageArgLength-isig.ParameterTypes.Count; idx++)
+                        {
+                            body.Instructions.Insert(index++, new CilInstruction(CilOpCodes.Ldnull));
+
+                        }
                     }
                 }
             }

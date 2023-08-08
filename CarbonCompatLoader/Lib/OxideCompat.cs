@@ -1,6 +1,5 @@
 ﻿using System.Reflection;
 using System.Runtime.CompilerServices;
-using Carbon;
 using Carbon.Core;
 using JetBrains.Annotations;
 using Oxide.Core.Extensions;
@@ -13,18 +12,30 @@ namespace CarbonCompatLoader.Lib;
 [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
 public static partial class OxideCompat
 {
+    internal static Dictionary<Assembly, ModLoader.ModPackage> modPackages = new();
     public static void RegisterPluginLoader(ExtensionManager self, PluginLoader loader, Extension oxideExt)
     {
         self.RegisterPluginLoader(loader);
         string asmName = Assembly.GetCallingAssembly().GetName().Name;
         Logger.Info($"Oxide plugin loader call using {loader.GetType().FullName} from assembly {asmName}");
+        Assembly asm = oxideExt != null ? oxideExt.GetType().Assembly : loader.GetType().Assembly;
+        string name = oxideExt != null ? oxideExt.Name : asm.GetName().Name;
+        string author = oxideExt != null ? oxideExt.Author : "CCL";
+        if (!modPackages.TryGetValue(asm, out ModLoader.ModPackage package))
+        {
+            package = new ModLoader.ModPackage
+            {
+                Name = $"{name} - {author} (CCL Oxide Extension)"
+            };
+            ModLoader.LoadedPackages.Add(package);
+            modPackages[asm] = package;
+        }
         foreach (Type type in loader.CorePlugins)
         {
             if (type.IsAbstract) continue;
-            //Logger.Info($"  Loading oxide plugin: {type.Name}");
             try
             {
-                ModLoader.InitializePlugin(type, out RustPlugin plugin, Community.Runtime.Plugins, precompiled:true, preInit: oxideExt == null ? null : 
+                ModLoader.InitializePlugin(type, out RustPlugin plugin, package, precompiled:true, preInit: oxideExt == null ? null : 
                     rustPlugin =>
                     {
                         rustPlugin.Version = oxideExt.Version;

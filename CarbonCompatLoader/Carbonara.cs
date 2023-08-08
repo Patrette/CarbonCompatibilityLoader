@@ -1,4 +1,5 @@
-﻿using Carbon.Core;
+﻿using System.Security.AccessControl;
+using Carbon.Core;
 using Facepunch;
 
 namespace CarbonCompatLoader;
@@ -48,7 +49,11 @@ public static class Carbonara
             #if DEBUG
                 Logger.Warn("Patched carbonara");
             #endif
-                asm.Write(carbonCore);
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    asm.Write(ms);
+                    File.WriteAllBytes(carbonCore, ms.ToArray());
+                }
             }
             //sw.Start();
             //Logger.Info($"Total time: {sw.Elapsed.TotalMilliseconds:n0}ms");
