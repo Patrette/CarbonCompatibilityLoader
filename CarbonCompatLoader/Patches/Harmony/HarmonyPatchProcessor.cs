@@ -1,4 +1,5 @@
-﻿using AsmResolver;
+﻿using System.Reflection;
+using AsmResolver;
 using AsmResolver.DotNet.Serialized;
 using AsmResolver.DotNet.Signatures.Types;
 using CarbonCompatLoader.Converters;
@@ -6,7 +7,7 @@ using Facepunch;
 
 namespace CarbonCompatLoader.Patches.Harmony;
 
-public class HarmonyBlacklist : BaseHarmonyPatch
+public class HarmonyPatchProcessor : BaseHarmonyPatch
 {
     public override void Apply(ModuleDefinition asm, ReferenceImporter importer, BaseConverter.GenInfo info)
     {
@@ -26,6 +27,7 @@ public class HarmonyBlacklist : BaseHarmonyPatch
                     if (sig.FixedArguments.Count > 1 && sig.FixedArguments[0].Element is TypeDefOrRefSignature tr &&
                         sig.FixedArguments[1].Element is Utf8String ats)
                     {
+                        RegisterPatch(tr.DefinitionAssembly().Name, ats, tr.FullName, $"{asm.Assembly.Name} - {td.FullName}");
                         if (!PatchWhitelist.IsPatchAllowed(tr, ats))
                         {
                             Logger.Info($"Unpatching {td.FullName}::{ats}");
@@ -59,6 +61,30 @@ public class HarmonyBlacklist : BaseHarmonyPatch
             }
         }
     }
+
+    public static void RegisterPatch(string ASMName, string MethodName, string TypeName, string reason)
+    {
+        CurrentPatches.Add(new PatchInfoEntry(ASMName, MethodName, TypeName, reason));
+        Logger.Info($"Found harmony patch {ASMName} - {TypeName}::{MethodName} from {reason}");
+    }
+    
+    public class PatchInfoEntry
+    {
+        public string ASMName;
+        public string TypeName;
+        public string MethodName;
+        public string reason;
+
+        public PatchInfoEntry(string ASMName, string methodName, string typeName, string reason)
+        {
+            this.ASMName = ASMName;
+            this.MethodName = methodName;
+            this.TypeName = typeName;
+            this.reason = reason;
+        }
+    }
+
+    public static List<PatchInfoEntry> CurrentPatches = new();
 
     public static class PatchWhitelist
     {

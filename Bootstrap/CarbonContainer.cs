@@ -67,7 +67,7 @@ public static class CarbonContainer
             if (type == null) continue;
             if (type.IsAbstract || !typeof(ICarbonExtension).IsAssignableFrom(type)) continue;
             ICarbonExtension ext = (ICarbonExtension)Activator.CreateInstance(type);
-            //type.GetField("SelfASMRaw", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, core_raw);
+            type.GetField("SelfASMRaw", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, core_raw);
             type.GetField("bootstrapUsed", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, true);
             if (cfg != null)
             {

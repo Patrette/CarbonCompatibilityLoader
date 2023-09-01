@@ -79,6 +79,7 @@ public static class BootstrapGen
         string infoPath = null;
         string packagesPath = null;
         string rootBuildPath = null;
+        string oxideRefPath = null;
         OptionSet optionSet = new OptionSet()
         {
             { "in|input|i=", x => {inputPath = string.Format(x, BuildConfiguration);} },
@@ -87,9 +88,15 @@ public static class BootstrapGen
             { "ext|ep=", x => { ExtPath = string.Format(x, BuildConfiguration);} },
             { "info=", x => { infoPath = x;} },
             { "package|packages|pk=", x => { packagesPath = x;} },
-            { "bp|build|buildpath=", x => { rootBuildPath = x;} }
+            { "bp|build|buildpath=", x => { rootBuildPath = x;} },
+            { "oxiderefs=", x => { oxideRefPath = x;} },
         };
         optionSet.Parse(args);
+        if (oxideRefPath != null)
+        {
+            GenOxideRefs.Run(oxideRefPath);
+            return;
+        }
         if (inputPath == null || rootBuildPath == null ||  ExtPath == null || infoPath == null)
         {
             Bootstrap.logger.Error("No args??");

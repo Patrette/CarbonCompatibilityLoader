@@ -48,8 +48,8 @@ internal class CCLEntrypoint : ICarbonExtension
         
     }
     
-    //[UsedImplicitly]
-    //internal static byte[] SelfASMRaw = null;
+    [UsedImplicitly]
+    internal static byte[] SelfASMRaw = null;
     [UsedImplicitly]
     private static JObject cfg;
     [UsedImplicitly]
@@ -59,6 +59,9 @@ internal class CCLEntrypoint : ICarbonExtension
     internal static CCLConfig InitialConfig;
     void ICarbonAddon.Awake(EventArgs args)
     {
+    #if DEBUG
+        Thread.CurrentThread.Name = "Main";
+    #endif
         LoadConfig(out bool autoUpdates, out enabled);
         cfg = null;
         Community.Runtime.Events.Subscribe(CarbonEvent.HooksInstalled, _ => CCLInterface.AttemptModuleInit());

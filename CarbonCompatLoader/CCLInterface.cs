@@ -1,6 +1,5 @@
 ﻿using Carbon;
 using Carbon.Base;
-using JetBrains.Annotations;
 
 namespace CarbonCompatLoader;
 

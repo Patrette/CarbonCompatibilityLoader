@@ -1,5 +1,4 @@
-﻿using System.Security.AccessControl;
-using Carbon.Core;
+﻿using Carbon.Core;
 using Facepunch;
 
 namespace CarbonCompatLoader;

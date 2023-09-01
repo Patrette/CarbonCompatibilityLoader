@@ -5,6 +5,7 @@ using AsmResolver.DotNet.Serialized;
 using Carbon.Core;
 using CarbonCompatLoader.Converters;
 using HarmonyLib;
+using ILVerify;
 using Microsoft.CodeAnalysis;
 
 namespace CarbonCompatLoader;
@@ -44,7 +45,9 @@ public static class MainConverter
     public static void LoadAssembly(string path, string fileName, string name, BaseConverter converter)
     {
         Stopwatch sw = Stopwatch.StartNew();
-        ModuleDefinition md = ModuleDefinition.FromFile(path, new ModuleReaderParameters(EmptyErrorListener.Instance));
+        byte[] originalASM = File.ReadAllBytes(path);
+        VerificationResult[] originalResults = ILVerifier.VerifyAssembly(originalASM);
+        ModuleDefinition md = ModuleDefinition.FromBytes(originalASM, new ModuleReaderParameters(EmptyErrorListener.Instance));
         if (AssemblyBlacklist.IsInvalid(md.Assembly))
         {
             Logger.Error($"{fileName} is invalid");
@@ -52,6 +55,8 @@ public static class MainConverter
         }
 
         byte[] data = converter.Convert(md, out BaseConverter.GenInfo info);
+        VerificationResult[] convertedResults = ILVerifier.VerifyAssembly(data, true);
+        ILVerifier.ProcessResults(originalResults, convertedResults, md, info.mappings);
         if (CCLEntrypoint.InitialConfig?.Development?.ReferenceAssemblies != null &&
             CCLEntrypoint.InitialConfig.Development.DevMode &&
             CCLEntrypoint.InitialConfig.Development.ReferenceAssemblies.Contains(md.Assembly?.Name))
@@ -114,12 +119,14 @@ public static class MainConverter
         }
     }
 
+    public static byte[] ThisASM;
+
     public static void Initialize(string selfName)
     {
         if (Carbonara.CanRun()) Carbonara.Run();
         Converters = new Dictionary<string, BaseConverter>();
         // disabled for now
-        //SelfModule = CCLCore.SelfASMRaw != null ? ModuleDefinition.FromBytes(CCLCore.SelfASMRaw) : ModuleDefinition.FromFile(Path.Combine(Defines.GetExtensionsFolder(), selfName));
+        ThisASM = CCLEntrypoint.SelfASMRaw ?? File.ReadAllBytes(Path.Combine(Defines.GetExtensionsFolder(), selfName));
         foreach (Assembly asm in AppDomain.CurrentDomain.GetAssemblies())
         {
             if (asm == null) continue;
@@ -141,8 +148,10 @@ public static class MainConverter
         {
             throw new NullReferenceException("Failed to find Carbon.dll??");
         }
-
-        PluginReferenceHandler.ApplyPatch(CarbonMain);
+        HarmonyInstance.PatchAll();
+        PluginReferenceHandler.ApplyPatch();
+        HookProcessorPatch.ApplyPatch();
+        ILVerifier.Init();
         Directory.CreateDirectory(RootDir);
     #if DEBUG
         Directory.CreateDirectory(Path.Combine(RootDir, "debug_gen"));

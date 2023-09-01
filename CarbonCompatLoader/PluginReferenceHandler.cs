@@ -13,10 +13,10 @@ internal static class PluginReferenceHandler
         __result?.AddRange(RefCache.Values);
     }
 
-    internal static void ApplyPatch(Assembly carbonMain)
+    internal static void ApplyPatch()
     {
         MainConverter.HarmonyInstance.Patch(
-            AccessTools.Method(carbonMain.GetType("Carbon.Jobs.ScriptCompilationThread"), "_addReferences"), 
+            AccessTools.Method(MainConverter.CarbonMain.GetType("Carbon.Jobs.ScriptCompilationThread"), "_addReferences"), 
             postfix:new HarmonyMethod(AccessTools.Method(typeof(PluginReferenceHandler), nameof(ResolveCustomReference))));
     #if DEBUG
         Logger.Warn("Patched PluginReferenceHandler");

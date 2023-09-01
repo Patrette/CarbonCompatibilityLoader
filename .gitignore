@@ -6,3 +6,4 @@ packages/
 workspace/
 nuget_cache/
 BootstrapGen/build/
+CarbonCompatLoader/ExternalRefs/

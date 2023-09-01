@@ -1,4 +1,6 @@
-﻿using CarbonCompatLoader.Patches;
+﻿using AsmResolver.DotNet.Builder;
+using AsmResolver.PE.DotNet.Builder;
+using CarbonCompatLoader.Patches;
 
 namespace CarbonCompatLoader.Converters;
 
@@ -17,11 +19,15 @@ public abstract class BaseConverter
 
         public string author = null;
 
+        public TokenMapping mappings;
+
         public GenInfo()//;AssemblyReference self)
         {
             //selfRef = self;
         }
     }
+    private static ManagedPEImageBuilder builder = new ManagedPEImageBuilder();
+    private static ManagedPEFileBuilder file_builder = new ManagedPEFileBuilder();
     public byte[] Convert(ModuleDefinition asm, out GenInfo info)
     {
         ReferenceImporter importer = new ReferenceImporter(asm);
@@ -31,9 +37,15 @@ public abstract class BaseConverter
             patch.Apply(asm, importer, info);
         }
 
+        PEImageBuildResult result = builder.CreateImage(asm);
+
+        if (result.HasFailed) throw new MetadataBuilderException("it failed :(");
+
+        info.mappings = (TokenMapping)result.TokenMapping;
+
         using (MemoryStream ms = new MemoryStream())
         {
-            asm.Write(ms);
+            file_builder.CreateFile(result.ConstructedImage).Write(ms);
             return ms.ToArray();
         }
     }

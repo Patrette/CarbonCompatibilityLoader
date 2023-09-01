@@ -44,10 +44,10 @@ public static class Helpers
             type = rec(type, out asmRef);
         }
         return asmRef;
-        
-        ITypeDescriptor rec(ITypeDescriptor type, out AssemblyReference output)
+
+        ITypeDescriptor rec(ITypeDescriptor ftype, out AssemblyReference output)
         {
-            IResolutionScope rs = type.Scope;
+            IResolutionScope rs = ftype.Scope;
             if (rs is AssemblyReference aref)
             {
                 output = aref;
@@ -61,7 +61,7 @@ public static class Helpers
             }
 
             output = null;
-            return type.DeclaringType;
+            return ftype.DeclaringType;
         }
     }
 }

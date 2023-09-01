@@ -1,4 +1,7 @@
-﻿using CarbonCompatLoader.Patches;
+﻿using API.Events;
+using Carbon;
+using CarbonCompatLoader.Lib;
+using CarbonCompatLoader.Patches;
 using CarbonCompatLoader.Patches.Harmony;
 using CarbonCompatLoader.Patches.Oxide;
 using JetBrains.Annotations;
@@ -18,7 +21,7 @@ public class HarmonyConverter : BaseConverter
         new OxideILSwitch(),
         
         // harmony
-        new HarmonyBlacklist(),
+        new HarmonyPatchProcessor(),
         
         // entrypoint
         new HarmonyEntrypoint(),

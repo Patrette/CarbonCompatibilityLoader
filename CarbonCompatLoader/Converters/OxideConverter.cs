@@ -22,7 +22,7 @@ public class OxideConverter : BaseConverter
         new HarmonyILSwitch(),
         
         // harmony
-        new HarmonyBlacklist(),
+        new HarmonyPatchProcessor(),
 
         // entrypoint
         new OxideEntrypoint(),

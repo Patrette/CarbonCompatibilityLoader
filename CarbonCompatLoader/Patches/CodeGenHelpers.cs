@@ -38,7 +38,7 @@ public static class CodeGenHelpers
         {
             new CilInstruction(CilOpCodes.Call, importer.ImportMethod(AccessTools.PropertyGetter(typeof(Carbon.Community), "Runtime"))),
             new CilInstruction(CilOpCodes.Callvirt, importer.ImportMethod(AccessTools.PropertyGetter(typeof(Carbon.Community), "Events"))),
-            new CilInstruction(CilOpCodes.Ldc_I4_S, (sbyte)eventId),
+            new CilInstruction(CilOpCodes.Ldc_I4, (int)eventId),
             self,
             new CilInstruction(CilOpCodes.Ldftn, method),
             new CilInstruction(CilOpCodes.Newobj, importer.ImportMethod(AccessTools.Constructor(typeof(Action<EventArgs>), new Type[] { typeof(object), typeof(IntPtr) }))),

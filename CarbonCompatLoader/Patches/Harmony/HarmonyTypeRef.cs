@@ -14,7 +14,7 @@ public class HarmonyTypeRef : BaseHarmonyPatch
             AssemblyReference aref = tw.Scope as AssemblyReference;
             if (aref != null && aref.Name == HarmonyASM)
             {
-                if (tw.Namespace == Harmony1NS) tw.Namespace = Harmony2NS; // Namespace override
+                if (tw.Namespace.StartsWith(Harmony1NS)) tw.Namespace = Harmony2NS; // Namespace override
                 if (tw.Name == "HarmonyInstance")
                 {
                     tw.Name = "Harmony";
