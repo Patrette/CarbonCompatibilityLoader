@@ -136,6 +136,12 @@ public static class Bootstrap
     
     public static void Run(string asmReadPath, string asmWritePath, out byte[] asmOut, string branch = "latest_build", byte[] extData = null, byte[] bootstrapData = null, bool load = false)
     {
+        if (load && Type.GetType("Carbon.Compat.CompatManager, Carbon.Compat") != null)
+        {
+            logger.Warn("Carbon now internally supports CCL\nPlease move your Oxide extensions to 'carbon/extensions' and your HarmonyMods to 'carbon/harmony'.");
+            asmOut = null;
+            return;
+        }
         asmOut = null;
     #if DEBUG
         logger.Info($"Input: {asmReadPath}");
